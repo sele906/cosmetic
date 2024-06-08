@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sub_menu">
+
+<select id="hit" resultType="java.util.Map">
+	SELECT 
+	p.p_id, 
+	(SELECT MIN(file_name) 
+     FROM p_attach a 
+     WHERE a.p_id = p.p_id) AS file_name, 
+	p_name, 
+	p_price 
+	FROM 
+    product p 
+	WHERE 
+    p_cate IN (
+        SELECT ctg_s_no 
+        FROM ctg 
+        WHERE ctg_b_no = #{p_cate}
+    )
+	ORDER BY p_hit DESC
+	LIMIT 4
+</select>
+
+<select id="sell" resultType="java.util.Map">
+	SELECT 
+	p.p_id, 
+	(SELECT MIN(file_name) 
+     FROM p_attach a 
+     WHERE a.p_id = p.p_id) AS file_name, 
+	p_name, 
+	p_price 
+	FROM 
+    product p 
+	WHERE 
+    p_cate IN (
+        SELECT ctg_s_no 
+        FROM ctg 
+        WHERE ctg_b_no = #{p_cate}
+    )
+	ORDER BY p_sell DESC
+	LIMIT 4
+</select>
+
+</mapper>

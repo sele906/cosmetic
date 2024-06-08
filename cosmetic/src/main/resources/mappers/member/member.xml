@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="member">
+
+<!-- 로그인 -->
+	<select id="login" resultType="String">
+		select nickname from member where
+		userid=#{userid} and passwd=#{passwd}
+	</select>
+
+<!-- 회원가입 -->
+	<insert id="join">
+		insert into member
+		(userid,passwd,name,
+		nickname,birth,phone,
+		email,
+		zipcode,address1,address2)
+		values
+		(#{userid},#{passwd},#{name},
+		#{nickname},#{birth},#{phone},
+		#{email},
+		#{zipcode},#{address1},#{address2})
+	</insert>
+
+<!-- 아이디 중복확인 -->
+	<select id="id_check" resultType="String">
+		select userid from member
+		where userid=#{userid}
+	</select>
+	
+	<select id="get_member_info" resultType="com.example.cosmetic.model.member.MemberDTO">
+		SELECT 
+		userid, NAME, nickname, birth,
+		zipcode, address1, address2,
+		email, phone, DATE, POINT
+		FROM member
+		WHERE userid = #{userid}
+	</select>
+
+	<update id="update_member_info">
+		UPDATE member
+		SET
+		passwd = #{passwd},
+		name = #{name},
+		nickname = #{nickname},
+		birth = #{birth},
+		phone = #{phone},
+		email = #{email},
+		zipcode = #{zipcode},
+		address1 = #{address1},
+		address2 = #{address2}
+		WHERE userid = #{userid}
+	</update>
+
+	<delete id="delete_member">
+		DELETE FROM member
+		WHERE userid = #{userid}
+	</delete>
+
+
+
+
+
+
+
+
+
+
+
+</mapper>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mypage">
+
+	<!-- 멤버 정보 요약 -->
+	<select id="get_member_info" resultType="java.util.Map">
+		SELECT name, userid, nickname, email, phone, point FROM member
+		WHERE userid=#{userid}
+	</select>
+	
+	<select id="orderlist_count" resultType="int">
+		SELECT COUNT(*) FROM orderlist l, orderitem i
+		WHERE l.orderid = i.orderid
+		and userid = #{userid}
+	</select>
+	
+	<select id="cart_count" resultType="int">
+		SELECT COUNT(*) FROM cart
+		WHERE userid = #{userid}
+	</select>
+	
+	<select id="zzim_count" resultType="int">
+		SELECT COUNT(*)
+		FROM zzim z, product p
+		WHERE z.p_id = p.p_id
+		and userid = #{userid}
+	</select>
+	
+	<select id="review_count" resultType="int">
+		SELECT COUNT(*)
+		FROM review r, product p
+		WHERE r.p_id = p.p_id
+		and userid = #{userid}
+	</select>
+	
+</mapper>

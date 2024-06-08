@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="admin">
+
+
+	<select id="big" resultType="String">
+		select DISTINCT ctg_big from ctg
+	</select>
+
+	<select id="small" resultType="String">
+		SELECT ctg_small FROM ctg WHERE
+		ctg_big=#{ctg_big}
+	</select>
+
+	<!-- <insert id="product_insert"> insert into product (p_name, p_price, 
+		p_stock, p_detail, p_cate) values(#{p_name},#{p_price}, #{p_stock},#{p_detail},#{p_cate}) 
+		</insert> -->
+
+	<insert id="product_insert">
+		INSERT INTO product (p_name, p_price, p_stock,
+		p_detail, p_cate)
+		VALUES (#{p_name}, #{p_price}, #{p_stock},
+		CONVERT(#{p_detail} USING utf8),
+		#{p_cate})
+	</insert>
+
+
+	<select id="small_no" resultType="int">
+		select DISTINCT ctg_s_no from
+		ctg where ctg_small=#{ctg_small}
+	</select>
+
+	<insert id="option_insert">
+		insert into product_option (o_name, o_p_id, o_price,
+		o_amount) values(
+		#{o_name}, #{o_p_id}, #{o_price}, #{o_amount})
+	</insert>
+
+	<select id="get_id" resultType="int">
+		SELECT p_id from product order by
+		p_id desc limit 1
+	</select>
+
+	<update id="update_product_stock" parameterType="java.util.Map">
+		UPDATE product
+		SET p_stock = p_stock + #{o_amount}
+		WHERE p_id = #{p_id}
+	</update>
+
+	<select id="user_list"
+		resultType="com.example.cosmetic.model.member.MemberDTO">
+		SELECT userid, name, nickname, birth, LEFT(address1, 6) AS
+		address1,phone, date, level, point,email
+		FROM member
+		<where>
+			<if test="searchKeyword != null and searchKeyword != ''">
+				AND (userid LIKE CONCAT('%', #{searchKeyword}, '%') OR
+				name LIKE CONCAT('%', #{searchKeyword}, '%'))
+			</if>
+		</where>
+		LIMIT #{pageCnt} OFFSET #{start}
+	</select>
+
+
+	<!--사용자 수 -->
+	<select id="user_count" resultType="int">
+		SELECT COUNT(*)
+		FROM member
+		<where>
+			<if test="searchKeyword != null and searchKeyword != ''">
+				AND (userid LIKE CONCAT('%', #{searchKeyword}, '%') OR
+				name LIKE
+				CONCAT('%', #{searchKeyword}, '%'))
+			</if>
+		</where>
+	</select>
+
+
+
+	<select id="order_count" resultType="int">
+		select count(*) from
+		orderlist
+	</select>
+
+	<!--주문번호에 따른 결제 상품 갯수 -->
+	<select id="user_order_count" resultType="int">
+		SELECT COUNT(*) FROM
+		orderlist l, orderitem i
+		WHERE l.orderid = i.orderid AND
+		i.orderid=#{orderid}
+	</select>
+
+	<select id="search"
+		resultType="com.example.cosmetic.model.product.ProductDTO">
+		select * from (
+		select rownum as
+		rn, A.*
+		from (
+		SELECT userid
+		FROM member
+		WHERE userid LIKE CONCAT('%', #{keyword}, '%')
+		ORDER BY
+		userid DESC
+		) A
+		)
+		where rn
+		between #{start} and #{end}
+	</select>
+
+	<select id="search_count" resultType="int">
+		select count(*) from
+		member
+		where userid LIKE CONCAT('%', #{keyword}, '%')
+	</select>
+
+	<!--orderid 뽑기 위함 -->
+	<select id="list" resultType="java.util.Map">
+		select orderid from orderlist
+	</select>
+
+	<select id="s_no" resultType="java.lang.Integer">
+		select ctg_s_no from ctg where
+		ctg_small = #{ctg_small}
+	</select>
+
+	<!--o_name이 없을경우 '옵션없음'으로 대체한다 -->
+	<select id="s_list"
+		resultType="com.example.cosmetic.model.product.ProductDTO">
+		SELECT DISTINCT p.p_id, p.p_name,
+		p.p_stock,p_price,o_amount,
+		COALESCE(o.o_name, '옵션 없음') AS o_name
+		FROM
+		product p
+		LEFT JOIN product_option o ON p.p_id = o.o_p_id
+		WHERE p.p_cate
+		= #{ctg_s_no}
+	</select>
+
+	<!--소분류 번호에 따른 상품 갯수 -->
+	<select id="product_count" resultType="int">
+		SELECT COUNT(*) AS total
+		FROM (
+		SELECT p.p_id,
+		SUM(o.o_amount) AS
+		p_stock,
+		GROUP_CONCAT(CONCAT(o.o_name, '[', o.o_amount, ']') SEPARATOR
+		' ') AS o_name
+		FROM product p
+		JOIN product_option o ON p.p_id = o.o_p_id
+		WHERE 1=1
+		<if test="searchKeyword != null and searchKeyword != ''">
+			AND (p.p_name LIKE CONCAT('%', #{searchKeyword}, '%')
+			OR
+			o.o_name LIKE CONCAT('%', #{searchKeyword}, '%'))
+		</if>
+		GROUP BY p.p_id
+		) AS subquery
+	</select>
+
+	<!--상품 목록 -->
+	<select id="product_list"
+		resultType="com.example.cosmetic.model.product.ProductDTO">
+		SELECT
+		p_id,
+		p_name,
+		p_price,
+		p.p_stock,
+		IFNULL(GROUP_CONCAT(CONCAT(o_name, '[', o_amount, ']') ORDER BY o_amount DESC SEPARATOR ' '), '옵션없음') AS
+		o_name,
+		SUM(o_amount) AS p_stock
+		FROM
+		product p
+		LEFT JOIN
+		product_option o ON p.p_id = o.o_p_id
+		WHERE
+		1=1
+		<if test="searchKeyword != null and searchKeyword != ''">
+			AND (p.p_name LIKE CONCAT('%', #{searchKeyword}, '%') OR o.o_name LIKE
+			CONCAT('%', #{searchKeyword}, '%'))
+		</if>
+		GROUP BY
+		p_id, p_name, p_price, p.p_stock
+		LIMIT
+		#{pageCnt}
+		OFFSET
+		#{start}
+	</select>
+
+	<insert id="insert_p_attach">
+		insert into p_attach(file_name, p_id)
+		values
+		<foreach collection="filenames" item="file_name" separator=",">
+			(#{file_name}, #{p_id})
+		</foreach>
+	</insert>
+
+
+
+	<select id="order_detail"
+		resultType="com.example.cosmetic.model.order.OrderDTO">
+		SELECT
+		l.orderid,
+		p.p_price,
+		p.p_name,
+		o.o_name,
+		o.p_id,
+		l.cancelreason,
+		l.orderdate,
+		l.userid,
+		l.price,
+		l.delivercost,
+		l.method,
+		l.address1,
+		l.userpoint,
+		(SELECT file_name FROM p_attach WHERE p_id = p.p_id ORDER BY p_id ASC LIMIT
+		1) AS file_name,
+		o.orderstatus,
+		po.o_price,
+		l.totalprice,
+		m.phone,
+		o.amount AS option_amount,
+		(SELECT SUM(amount) FROM orderitem WHERE orderid = l.orderid) AS total_amount
+		FROM
+		orderitem o
+		JOIN orderlist l ON o.orderid = l.orderid
+		JOIN product p ON p.p_id = o.p_id
+		JOIN member m ON m.userid = l.userid
+		LEFT JOIN product_option po ON p.p_id = po.o_p_id
+		WHERE
+		l.orderid = #{orderid}
+		GROUP BY
+		l.orderid,
+		p.p_name,
+		o.o_name,
+		o.p_id,
+		o.amount,
+		l.orderdate,
+		l.userid,
+		l.price,
+		l.delivercost,
+		l.method,
+		l.address1,
+		l.userpoint,
+		o.orderstatus,
+		po.o_price,
+		file_name,
+		l.totalprice,
+		m.phone
+
+	</select>
+
+	<!-- 주문 갯수 계산 -->
+	<select id="admin_orderCount" resultType="int">
+		SELECT COUNT(*)
+		FROM orderlist l
+		WHERE 1=1
+		<choose>
+			<when test="startDate != '' and endDate != ''">
+				AND l.orderDate &gt;= #{startDate}
+				AND l.orderDate
+				&lt;= #{endDate}
+			</when>
+			<otherwise>
+				AND l.orderDate &gt;= (SELECT MIN(orderDate) FROM
+				orderlist)
+				AND l.orderDate &lt;= (SELECT MAX(orderDate) FROM
+				orderlist)
+			</otherwise>
+		</choose>
+		<if test="searchKeyword != null and searchKeyword != ''">
+			AND (l.userid LIKE CONCAT('%', #{searchKeyword}, '%')
+			OR
+			l.orderid IN (SELECT i.orderid FROM orderitem i WHERE i.orderid LIKE
+			CONCAT('%', #{searchKeyword}, '%')))
+		</if>
+	</select>
+
+	<!-- 주문 목록 출력 -->
+	<select id="admin_orderlist"
+		resultType="com.example.cosmetic.model.order.OrderDTO">
+		SELECT orderid, userid, orderdate, totalprice, cancelreason FROM
+		orderlist
+		<where>
+			<if test="startDate != '' and endDate != ''">
+				orderDate &gt;= #{startDate} AND orderDate &lt;=
+				#{endDate}
+			</if>
+			<if test="searchKeyword != null and searchKeyword != ''">
+				AND (userid LIKE CONCAT('%', #{searchKeyword}, '%')
+				OR
+				orderid LIKE CONCAT('%', #{searchKeyword}, '%'))
+			</if>
+			<if test="startDate == '' and endDate == ''">
+				orderDate &gt;= (SELECT MIN(orderDate) FROM orderlist)
+				AND orderDate &lt;= (SELECT MAX(orderDate) FROM orderlist)
+			</if>
+		</where>
+		ORDER BY orderDate DESC
+		LIMIT #{pageCnt} OFFSET #{start}
+	</select>
+
+	<update id="refund_status">
+		UPDATE orderitem
+		SET orderstatus = '반품완료'
+		WHERE orderid =#{orderid}
+		AND p_id = #{p_id}
+		AND orderstatus = '반품요청'
+	</update>
+
+
+
+</mapper>

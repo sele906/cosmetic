@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="product">
+
+	<!-- 상품 리스트 -->
+	<select id="product_list"
+		resultType="com.example.cosmetic.model.product.ProductDTO">
+		select *
+		from (
+		select rownum
+		as rn, A.*
+		from (
+		select * from
+		product
+		) A
+		)
+		where rn between #{start} and #{end}
+	</select>
+
+	<!-- 대분류 번호에 따른 소분류 제목,대분류 번호 -->
+	<select id="main_category"
+		resultType="com.example.cosmetic.model.category.CategoryDTO">
+		select ctg_small, ctg_b_no, ctg_s_no
+		from ctg
+		where
+		ctg_b_no=#{ctg_b_no}
+	</select>
+
+	<!-- 대분류 제목 -->
+	<select id="big_name" resultType="String">
+		select DISTINCT
+		ctg_big
+		from ctg
+		where ctg_b_no=#{ctg_b_no}
+	</select>
+
+
+	<!-- 소분류 -->
+	<!-- 상품수 출력 -->
+	<select id="sub_count" resultType="int">
+		select count(*) from product
+		where p_cate = #{no}
+	</select>
+
+	<!-- 리스트 -->
+	<select id="sub_list" resultType="java.util.Map">
+		SELECT
+		p.p_id,
+		p.p_name,
+		( SELECT file_name FROM p_attach WHERE p_id = p.p_id ORDER BY p_id ASC
+		LIMIT 1
+		) AS file_name,
+		p.p_price,
+		p.p_cate,
+		c.ctg_small,
+		d.d_info,
+		(SELECT p_id FROM zzim WHERE userid = #{userid} AND p_id = p.p_id) AS p_like
+		FROM
+		product p
+		JOIN
+		ctg c ON p.p_cate = c.ctg_s_no
+		JOIN
+		delivery d ON p.p_delivery = d.d_num
+		WHERE
+		p.p_cate = #{no}
+		GROUP BY
+		p.p_id, p.p_name, p.p_price, p.p_cate, c.ctg_small, d.d_info
+
+		<choose>
+			<when test="order == 'best'">
+				ORDER BY p_hit DESC
+			</when>
+			<when test="order == 'new'">
+				ORDER BY p_date DESC
+			</when>
+			<when test="order == 'sell'">
+				ORDER BY p_sell DESC
+			</when>
+			<when test="order == 'price'">
+				ORDER BY p_price
+			</when>
+		</choose>
+		LIMIT #{pageCnt} OFFSET #{start}
+	</select>
+
+
+	<!-- 소분류 카테고리 코드 > 카테고리 정보 가져오기 -->
+	<select id="get_cate_name" resultType="java.util.Map">
+		SELECT ctg_s_no, ctg_b_no,
+		ctg_small FROM ctg WHERE ctg_s_no=#{no}
+	</select>
+
+	<!-- 디테일 -->
+	<select id="detail"
+		resultType="com.example.cosmetic.model.product.ProductDTO">
+		select ctg_small, ctg_b_no, ctg_big, p_cate, p_id,ctg_s_no,( SELECT file_name FROM p_attach WHERE p_id = p.p_id ORDER BY p_id ASc LIMIT 1) AS file_name,
+		p_name, p_price, p_delivery,
+		p_detail, p_hit, (SELECT p_id FROM zzim WHERE userid=#{userid} AND p_id=p.p_id)
+		p_like
+		from product p, ctg c
+		where p.p_cate = c.ctg_s_no and
+		p_id=#{p_id}
+	</select>
+
+	<!-- 디테일 화면해서 상품 선택시 해당하는 옵션 띄우기 -->
+	<select id="detail_option" resultType="java.util.Map">
+		select p.*, po.*
+		from
+		product p
+		LEFT JOIN product_option po ON p.p_id = po.o_p_id
+		where p.p_id
+		= #{p_id}
+	</select>
+
+	<!--p_id에 다른 o_name 가지고오기 -->
+	<select id="get_o_name" resultType="java.util.Map">
+		SELECT p.*, po.*
+		FROM product p
+		LEFT JOIN product_option po ON p.p_id = po.o_p_id
+		WHERE p.p_id = #{p_id} AND o_amount !=0
+	</select>
+
+	<select id="list_p_attach" resultType="String">
+		select file_name from p_attach
+		where p_id=#{p_id}
+		order by file_id
+	</select>
+	
+	<!-- 조회수 -->
+	<update id="update_hit">
+		UPDATE product
+		SET p_hit = p_hit + 1
+		WHERE p_id = #{p_id}
+	</update>
+	
+	<!-- 리뷰수 -->
+	<select id="count_review" resultType="int">
+		SELECT COUNT(*)
+		FROM review
+		WHERE p_id = #{p_id}
+	</select>
+	
+	 <select id="hit_product" resultType="com.example.cosmetic.model.product.ProductDTO">
+    SELECT p.p_name, p.p_price,p.p_id, COUNT(*) AS order_count,(SELECT file_name FROM p_attach WHERE p_id = p.p_id ORDER BY p_id ASC LIMIT 1) AS file_name
+    FROM orderitem o
+    JOIN product p ON o.p_id = p.p_id
+    GROUP BY o.p_id
+    ORDER BY order_count DESC
+    LIMIT 3
+   </select>
+   
+   <select id="hit2_product" resultType="com.example.cosmetic.model.product.ProductDTO">
+   SELECT p.p_name,p.p_id, p.p_price,COUNT(*) AS order_count,(SELECT file_name FROM p_attach WHERE p_id = p.p_id ORDER BY p_id ASC LIMIT 1) AS file_name
+   FROM orderitem o
+   JOIN product p ON o.p_id = p.p_id
+   GROUP BY o.p_id
+   ORDER BY order_count DESC
+   LIMIT 3, 3
+   </select>
+	
+
+</mapper>

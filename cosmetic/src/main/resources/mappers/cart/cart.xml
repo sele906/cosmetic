@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cart">
+<!--장바구니 추가 -->
+<insert id="cart_insert">
+INSERT INTO cart (userid, o_name, p_id, amount) VALUES (#{userid}, #{o_name}, #{p_id},#{amount})
+</insert>
+
+<!--장바구니 목록-->
+<select id="cart_list" resultType="com.example.cosmetic.model.cart.CartDTO">
+select c.c_id, p.p_id, p.p_name,p.p_price, c.amount,c.o_name, p_price*amount money,
+( SELECT file_name FROM p_attach WHERE p_id = p.p_id ORDER BY p_id ASc LIMIT 1) AS file_name
+from member m, cart c, product p
+where m.userid=c.userid and c.p_id=p.p_id and c.userid=#{userid}
+order by c_id
+
+
+
+</select>
+
+<!--상품 한개 삭제  -->
+<delete id="cart_delete">
+delete from cart where c_id=#{c_id}
+</delete>
+
+<!--상품 전체 삭제-->
+<delete id="cart_delete_all">
+delete from cart where userid=#{userid}
+</delete>
+
+<!--상품의 옵션 변경-->
+<update id="o_name_update">
+update cart set o_name=#{o_name}
+where c_id=#{c_id}
+</update>
+
+<!--상품의 수량 변경-->
+<update id="amount_update">
+update cart set amount=#{amount}
+where c_id=#{c_id}
+</update>
+
+<!--상품 가격-->
+<!-- <select id="cart_product_money" resultType="com.example.cosmetic.model.cart.CartDTO">
+select p_name,sum(price*amount)money
+from cart c,product p
+where c.p_id=p.p_id
+group by p_name
+order by p_name
+</select> -->
+
+<!--장바구니 합계-->
+<select id="cart_sum_money" resultType="java.lang.Integer">
+SELECT IFNULL(SUM(p.p_price * c.amount), 0) AS money
+FROM cart c
+INNER JOIN product p ON c.p_id = p.p_id
+WHERE c.userid = #{userid}
+</select>
+
+<!--장바구니에 상품 존재 여부 확인  -->
+<select id="exist_cart" resultType="com.example.cosmetic.model.cart.CartDTO">
+    SELECT o_name, p_id, userid, amount,c_id
+    FROM cart
+    WHERE userid = #{userid}
+</select>
+
+<update id="update_amount">
+update cart set
+amount=#{amount} where c_id =#{c_id} 
+</update>
+
+<select id="amount" resultType="int">
+select amount
+from cart 
+where c_id= #{c_id}
+</select>
+
+<delete id="c_id_delete">
+delete from cart
+where c_id=#{c_id}
+</delete>
+
+</mapper>

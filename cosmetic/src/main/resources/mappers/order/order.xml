@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="order">
+
+	<!-- 데이터 입력시 새로 생성된 primary key 가져오기 -->
+	<select id="getId" resultType="int">
+		select LAST_INSERT_ID()
+	</select>
+	<select id="getOrderId" resultType="long">
+		SELECT *
+		FROM orderlist
+		ORDER BY DATE_FORMAT(orderDate, '%Y-%m-%d %H:%i:%s') DESC
+		LIMIT 1
+	</select>
+
+	<select id="memberInfo" resultType="java.util.Map">
+		SELECT NAME, phone, zipcode, address1, address2 FROM member
+		WHERE userid=#{userid}
+	</select>
+
+	<!-- 장바구니의 상품 > 주문 아이템 테이블에 저장 -->
+	<insert id="orderItemInsert">
+		INSERT INTO orderitem(
+		p_id, amount, orderstatus, orderid, o_name
+		) VALUES (
+		#{p_id}, #{amount}, #{orderstatus}, #{orderid}, #{o_name}
+		)
+	</insert>
+
+	<!-- 주문한 상품 목록 확인 -->
+	<select id="orderItemsIdx" resultType="java.util.Map">
+		select * from orderitem
+		where orderid = #{orderid}
+	</select>
+	<select id="orderItems" resultType="java.util.Map">
+		select * from orderitem
+		where orderItemId = #{itemId}
+	</select>
+
+	<!-- 상품정보 가져오기 -->
+	<select id="orderedProducts" resultType="java.util.Map">
+		SELECT
+		p.*,
+		(SELECT file_name FROM p_attach WHERE p_id = p.p_id ORDER BY p_id ASC LIMIT
+		1) AS file_name
+		FROM
+		product p
+		WHERE
+		p.p_id = #{p_id}
+
+	</select>
+
+	<!-- 주문테이블 데이터 입력 -->
+	<insert id="orderInsert">
+		INSERT INTO orderlist (
+		orderid, userid,
+		price, deliverCost, totalPrice,
+		method,
+		username, zipcode, address1, address2, tel,
+		userPoint
+		) VALUES (
+		#{orderid}, #{userid},
+		#{price}, #{deliverCost}, #{totalPrice},
+		#{method},
+		#{username}, #{zipcode}, #{address1}, #{address2}, #{tel},
+		#{userPoint}
+		)
+	</insert>
+
+	<!-- 주문결과 확인 -->
+	<select id="orderSelect"
+		resultType="com.example.cosmetic.model.order.OrderDTO">
+		select * from orderlist
+		where orderId = #{orderid}
+	</select>
+
+	<!-- 포인트 적립 -->
+	<update id="pointUpdate">
+		UPDATE MEMBER
+		SET POINT = POINT + #{point}
+		WHERE userid = #{userid}
+	</update>
+
+	<!-- 적립된 포인트 보여주기 -->
+	<select id="showPoint" resultType="int">
+		select POINT from member
+		where userid = #{userid}
+	</select>
+
+	<!-- 주문 수 세기 -->
+	<select id="orderCount" resultType="int">
+		select COUNT(*) from orderlist l, orderitem i
+		WHERE l.orderid = i.orderid
+		and userid = #{userid}
+		<choose>
+			<when test="startDate != '' and endDate != ''">
+				and orderDate &gt;= #{startDate}
+				AND orderDate &lt;= #{endDate}
+			</when>
+			<when test="startDate == '' and endDate == ''">
+				and orderDate &gt;= (SELECT MIN(orderDate) FROM orderList WHERE userid
+				= #{userid})
+				AND orderDate &lt;= (SELECT MAX(orderDate) FROM orderList WHERE userid
+				= #{userid})
+			</when>
+		</choose>
+		<choose>
+			<when test="status != null and status != ''">
+				<choose>
+					<when test="status == '취소/반품'">
+						AND (orderStatus = '반품완료' OR orderStatus = '결제취소')
+					</when>
+					<otherwise>
+						AND orderStatus = #{status}
+					</otherwise>
+				</choose>
+			</when>
+			<when test="status == '' and status == null">
+			</when>
+		</choose>
+	</select>
+
+	<!-- 주문 목록 출력 -->
+	<select id="orderList"
+		resultType="com.example.cosmetic.model.order.OrderDTO">
+		SELECT i.orderid, orderDate, i.orderItemId, p_id, amount, orderStatus,
+		totalPrice, o_name
+		from orderlist l, orderitem i
+		WHERE l.orderid = i.orderid
+		and userid = #{userid}
+		<choose>
+			<when test="startDate != '' and endDate != ''">
+				AND orderDate &gt;= #{startDate}
+				AND orderDate &lt;= #{endDate}
+			</when>
+			<when test="startDate == '' and endDate == ''">
+				AND orderDate &gt;= (SELECT MIN(orderDate) FROM orderList WHERE userid
+				= #{userid})
+				AND orderDate &lt;= (SELECT MAX(orderDate) FROM orderList WHERE userid
+				= #{userid})
+			</when>
+		</choose>
+		<choose>
+			<when test="status != null and status != ''">
+				<choose>
+					<when test="status == '취소/반품'">
+						AND (orderStatus = '반품완료' OR orderStatus = '결제취소')
+					</when>
+					<otherwise>
+						AND orderStatus = #{status}
+					</otherwise>
+				</choose>
+			</when>
+			<when test="status == '' and status == null">
+			</when>
+		</choose>
+		ORDER BY orderDate DESC
+		limit #{pageCnt} offset #{start}
+	</select>
+
+	<!-- 주문 상태 세기 -->
+	<select id="countStatus" resultType="int">
+		select COUNT(*) from orderlist l, orderitem i
+		WHERE l.orderid = i.orderid
+		and userid = #{userid}
+		<choose>
+			<when test="status == 1">
+				and orderStatus = '결제완료'
+			</when>
+			<when test="status == 2">
+				and orderStatus = '배송중'
+			</when>
+			<when test="status == 3">
+				and orderStatus = '배송완료'
+			</when>
+			<when test="status == 4">
+				and orderStatus = '반품요청'
+			</when>
+			<when test="status == 5">
+				and (orderStatus = '반품완료' or orderStatus = '결제취소')
+			</when>
+		</choose>
+	</select>
+
+	<!-- 주문된 상품 카트에서 지우기 -->
+	<delete id="cartDelete">
+		delete from cart
+		where c_id=#{c_id}
+	</delete>
+
+	<!-- 상품리스트에서 주문 아이템 삭제 -->
+	<delete id="orderItemDelete">
+		DELETE FROM orderitem
+		WHERE orderItemId = #{orderItemId}
+	</delete>
+
+	<!-- 주문 리스트에서 특정 주문 삭제 -->
+	<delete id="orderDelete">
+		DELETE FROM orderlist
+		where orderid = #{orderid}
+	</delete>
+
+	<!-- 주문 리스트에서 주문 아이템 id 선택 -->
+	<select id="orderItemIdSelect" resultType="String">
+		select orderItemId from orderlist
+		where orderid = #{orderid}
+	</select>
+
+	<!-- 주문 리스트 업데이트 -->
+	<update id="orderlistUpdate">
+		UPDATE orderlist
+		SET orderItemId = CAST(#{orderItemId} AS JSON)
+		WHERE orderid = #{orderid}
+	</update>
+
+	<!-- 환불시 금액 차감 -->
+	<delete id="deletePrice">
+		delete from orderlist
+		WHERE orderid = #{orderid}
+	</delete>
+	<update id="updatePrice">
+		UPDATE orderlist
+		SET price = #{price}, totalPrice = #{totalPrice}
+		WHERE orderid = #{orderid}
+	</update>
+
+	<!-- 환불 전 주문 아이템 존재여부 -->
+	<select id="countItem" resultType="int">
+		SELECT COUNT(*) FROM orderitem
+		WHERE orderid = #{orderid}
+	</select>
+
+	<!-- 주문목록에서 환불에 필요한 정보 불러오기 -->
+	<select id="chooseCosts" resultType="java.util.Map">
+		SELECT price, deliverCost, totalPrice
+		FROM orderlist
+		WHERE orderid = #{orderid}
+	</select>
+
+	<update id="updateStatus">
+		UPDATE orderitem
+		<choose>
+			<when test="status == 1">
+				SET orderStatus = '결제완료'
+			</when>
+			<when test="status == 2">
+				SET orderStatus = '배송중'
+			</when>
+			<when test="status == 3">
+				SET orderStatus = '배송완료'
+			</when>
+			<when test="status == 4">
+				SET orderStatus = '반품요청'
+			</when>
+			<when test="status == 5">
+				SET orderStatus = '반품완료'
+			</when>
+			<when test="status == 6">
+				SET orderStatus = '결제취소'
+			</when>
+		</choose>
+		WHERE orderItemId = #{itemid}
+	</update>
+
+	<update id="cancelReason">
+		UPDATE orderlist
+		SET cancelreason = #{reason}
+		WHERE orderid = #{orderid}
+	</update>
+
+	<!-- 상품수량 확인 -->
+	<select id="pItemAmount" resultType="int">
+		SELECT o_amount FROM product_option
+		WHERE o_p_id = #{p_id} AND o_name = #{o_name}
+	</select>
+
+	<select id="pAmount" resultType="int">
+		SELECT p_stock FROM product WHERE p_id = #{p_id}
+	</select>
+	
+	<!-- 옵션 없을 때 상품 수량 확인 -->
+	<select id="p_no_option_amount" resultType="int">
+		SELECT p_stock FROM product WHERE p_id = #{p_id}
+	</select>
+
+	<!-- 상품수량 업데이트 -->
+
+	<update id="pItemUpdateAmount">
+		UPDATE product_option
+		SET o_amount = #{PItemAmount}
+		WHERE o_p_id = #{p_id}
+		AND o_name = #{o_name}
+	</update>
+
+	<update id="pUpdateAmount">
+		UPDATE product
+		SET p_stock = #{PAmount}
+		WHERE p_id = #{p_id}
+	</update>
+	
+	<!-- 옵션 없을 때 -->
+	<update id="p_no_o_amount_update">
+		UPDATE product
+		SET p_stock = #{PAmount}
+		WHERE p_id = #{p_id}
+	</update>
+	
+	<!-- 상품 판매시 판매수량 업데이트 -->
+	<update id="p_sell_update">
+		UPDATE product 
+		SET p_sell = p_sell + 1 
+		WHERE p_id = #{p_id}
+	</update>
+	
+	
+
+</mapper>
