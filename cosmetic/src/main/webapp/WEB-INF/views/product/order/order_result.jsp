@@ -67,7 +67,7 @@
 .step_list li {
 	padding: 0 20px;
 }
-.step_list li:nth-child(2) {
+.step_list li:nth-child(3) {
 	font-weight: bold;
 	color: limegreen;
 }
