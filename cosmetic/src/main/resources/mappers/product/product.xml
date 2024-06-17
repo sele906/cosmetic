@@ -141,21 +141,17 @@
 	</select>
 	
 	 <select id="hit_product" resultType="com.example.cosmetic.model.product.ProductDTO">
-    SELECT p.p_name, p.p_price,p.p_id, COUNT(*) AS order_count,(SELECT file_name FROM p_attach WHERE p_id = p.p_id ORDER BY p_id ASC LIMIT 1) AS file_name
-    FROM orderitem o
-    JOIN product p ON o.p_id = p.p_id
-    GROUP BY o.p_id
-    ORDER BY order_count DESC
-    LIMIT 3
+		 select p.p_name, p.p_price, p.p_id, (SELECT file_name FROM p_attach WHERE p_id = p.p_id ORDER BY p_id ASC LIMIT 1) AS file_name
+		 from product p
+		 order by p.p_hit desc
+		 limit 3
    </select>
    
    <select id="hit2_product" resultType="com.example.cosmetic.model.product.ProductDTO">
-   SELECT p.p_name,p.p_id, p.p_price,COUNT(*) AS order_count,(SELECT file_name FROM p_attach WHERE p_id = p.p_id ORDER BY p_id ASC LIMIT 1) AS file_name
-   FROM orderitem o
-   JOIN product p ON o.p_id = p.p_id
-   GROUP BY o.p_id
-   ORDER BY order_count DESC
-   LIMIT 3, 3
+	   select p.p_name, p.p_price, p.p_id, (SELECT file_name FROM p_attach WHERE p_id = p.p_id ORDER BY p_id ASC LIMIT 1) AS file_name
+	   from product p
+	   order by p.p_hit desc
+	   limit 4, 3
    </select>
 	
 
