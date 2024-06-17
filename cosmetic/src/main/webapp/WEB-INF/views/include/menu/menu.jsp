@@ -4,8 +4,7 @@
 
 <style>
 .row #top {
-	color: red;
-	height: 20px; 
+	height: 20px;
 	/* min-width: 620px; */
 }
 .main_menu_bg .nave_menu {
@@ -26,8 +25,8 @@
 	left: 1px; */
 	
 	position: fixed;
-	left: 1px;
-	top: 30px;
+	left: 15px;
+	top: 25px;
 }
 
 /* 최근 본 목록박스 토글 */
