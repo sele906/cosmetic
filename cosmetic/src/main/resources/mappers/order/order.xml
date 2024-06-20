@@ -76,14 +76,14 @@
 
 	<!-- 포인트 적립 -->
 	<update id="pointUpdate">
-		UPDATE MEMBER
-		SET POINT = POINT + #{point}
+		UPDATE member
+		SET point = point + #{point}
 		WHERE userid = #{userid}
 	</update>
 
 	<!-- 적립된 포인트 보여주기 -->
 	<select id="showPoint" resultType="int">
-		select POINT from member
+		select point from member
 		where userid = #{userid}
 	</select>
 
@@ -98,9 +98,9 @@
 				AND orderDate &lt;= #{endDate}
 			</when>
 			<when test="startDate == '' and endDate == ''">
-				and orderDate &gt;= (SELECT MIN(orderDate) FROM orderList WHERE userid
+				and orderDate &gt;= (SELECT MIN(orderDate) FROM orderlist WHERE userid
 				= #{userid})
-				AND orderDate &lt;= (SELECT MAX(orderDate) FROM orderList WHERE userid
+				AND orderDate &lt;= (SELECT MAX(orderDate) FROM orderlist WHERE userid
 				= #{userid})
 			</when>
 		</choose>
@@ -134,9 +134,9 @@
 				AND orderDate &lt;= #{endDate}
 			</when>
 			<when test="startDate == '' and endDate == ''">
-				AND orderDate &gt;= (SELECT MIN(orderDate) FROM orderList WHERE userid
+				AND orderDate &gt;= (SELECT MIN(orderDate) FROM orderlist WHERE userid
 				= #{userid})
-				AND orderDate &lt;= (SELECT MAX(orderDate) FROM orderList WHERE userid
+				AND orderDate &lt;= (SELECT MAX(orderDate) FROM orderlist WHERE userid
 				= #{userid})
 			</when>
 		</choose>
