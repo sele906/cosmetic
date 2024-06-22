@@ -33,7 +33,7 @@
 <summary><b>ER 다이어그램</b></summary>
 <div markdown="1">
   
-![cosmetic_erd](https://github.com/sele906/cosmetic/assets/81071162/08821bab-72c4-448d-8c1f-b64609db1ffb)
+![cosmetic_erd](https://github.com/sele906/cosmetic/assets/81071162/e8cfb0bc-7e91-44cd-8fb3-6fbec0783155)
 
 </div>
 </details>
