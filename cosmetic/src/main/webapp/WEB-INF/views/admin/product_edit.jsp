@@ -647,8 +647,11 @@ $("#fileInput").on("change", function(e) {
             };
             reader.readAsDataURL(files[i]);
         }
+        for (let pair of form_data.entries()) {
+            console.log(pair[0] + ': ' + pair[1]);
+        }
     }
-    console.log(form_data);
+    
 
     $.ajax({
         url: "/upload/ajax_upload",

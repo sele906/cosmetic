@@ -30,7 +30,8 @@ public class UploadFileUtils {
 
 	public static String uploadFile(String uploadPath, String originalName, byte[] fileData) throws Exception {
 		UUID uid = UUID.randomUUID();// uuid객체
-		String filename = uid.toString() + "_" + originalName;
+		String uuidStr = uid.toString().replaceAll("-", "").substring(0, 10);
+		String filename = uuidStr + "_" + originalName;
 		String path = calcPath(uploadPath);
 		File target = new File(uploadPath + path, filename);
 		FileCopyUtils.copy(fileData, target);

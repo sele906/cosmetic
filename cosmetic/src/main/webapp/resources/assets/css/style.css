@@ -937,7 +937,7 @@ service section css
     transition: all 0.6s;
 }
 .single_work_overlay.single_work_overlay2{
-    padding-top: 40%;
+    padding-top: 20%;
 }
 .single_mixi_portfolio:hover .single_work_overlay{
     opacity: 0.5;

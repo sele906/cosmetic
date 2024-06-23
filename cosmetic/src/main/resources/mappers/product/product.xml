@@ -95,7 +95,7 @@
 		resultType="com.example.cosmetic.model.product.ProductDTO">
 		select ctg_small, ctg_b_no, ctg_big, p_cate, p_id,ctg_s_no,( SELECT file_name FROM p_attach WHERE p_id = p.p_id ORDER BY p_id ASc LIMIT 1) AS file_name,
 		p_name, p_price, p_delivery,
-		p_detail, p_hit, (SELECT p_id FROM zzim WHERE userid=#{userid} AND p_id=p.p_id)
+		CONVERT(p_detail USING utf8) AS p_detail, p_hit, (SELECT p_id FROM zzim WHERE userid=#{userid} AND p_id=p.p_id)
 		p_like
 		from product p, ctg c
 		where p.p_cate = c.ctg_s_no and

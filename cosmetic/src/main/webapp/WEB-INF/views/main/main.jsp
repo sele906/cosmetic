@@ -11,6 +11,7 @@
 <head>
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<link rel="icon" type="image/x-icon" href="/resources/icon/favicon.ico">
 <title>메인화면</title>
 <script src="http://code.jquery.com/jquery-3.7.1.min.js"></script>
 <style type="text/css">
@@ -77,6 +78,12 @@
 
 .team-img img:hover {
 	transform: scale(1.05);
+}
+
+.team a {
+	display:inline-block;
+	height:50px;
+	overflow: hidden;
 }
 
 .team-name {
@@ -238,8 +245,10 @@
 													src="${fn:replace(row.file_name, 'src/main/webapp', '')}"
 													alt="" /> <a
 													href="/product/detail_before?p_id=${row.p_id}">${row.p_name}</a>
-												<p style="font-weight: bold; color: black;">${row.p_price}
-													원</p>
+												<p style="font-weight: bold; color: black;">
+													<fmt:formatNumber type="number" value="${row.p_price}"
+														pattern="#,###"></fmt:formatNumber>원
+												</p>
 											</div>
 										</div>
 									</c:forEach>
@@ -257,12 +266,12 @@
 												<img class="img"
 													src="${fn:replace(var.file_name, 'src/main/webapp', '')}"
 													alt="" />
-												<h6>${var.p_name}</h6>
-												<h6 style="font-weight: bold; color: black;">
+												<a
+													href="/product/detail_before?p_id=${var.p_id}">${var.p_name}</a>
+												<p style="font-weight: bold; color: black;">
 													<fmt:formatNumber type="number" value="${var.p_price}"
-														pattern="#,###"></fmt:formatNumber>
-													원
-												</h6>
+														pattern="#,###"></fmt:formatNumber>원
+												</p>
 
 											</div>
 										</div>
@@ -295,9 +304,9 @@
 								<img src="/resources/assets/images/2.jpg" alt="" />
 								<div class="single_work_overlay">
 									<h5
-										style="font-weight: bold; color: black; margin-bottom: -1.5rem;">
+										style="font-weight: bold; color: black;">
 										<a style="color: black;"
-											href="/product/detail_before?p_id=286">컬러 앤 네이처 네일 컬러</a>
+											href="/product/detail_before?p_id=286">컬러 앤 네이처</a>
 									</h5>
 									<div class="separator"></div>
 									<p style="font-weight: bold; color: black;">2,000원</p>
@@ -306,15 +315,14 @@
 						</div>
 						<div class="col-sm-4 col-xs-12">
 							<div class="single_mixi_portfolio">
-								<img src="/resources/assets/images/무지개2.jpg" alt="" />
+								<img src="/resources/assets/images/lasting.png" alt="" />
 								<div class="single_work_overlay single_work_overlay2">
 									<h5
-										style="font-weight: bold; color: black; margin-bottom: -1.5rem;">
-										<a style="color: black;" href="/product/detail_before?p_id=1">무지개
-											멘션</a>
+										style="font-weight: bold; color: black;">
+										<a style="color: black;" href="/product/detail_before?p_id=242">라스팅 글로스립</a>
 									</h5>
 									<div class="separator"></div>
-									<p style="font-weight: bold; color: black;">3,900원</p>
+									<p style="font-weight: bold; color: black;">13,900원</p>
 								</div>
 							</div>
 						</div>
@@ -322,8 +330,9 @@
 							<div class="single_mixi_portfolio">
 								<img src="/resources/assets/images/오른쪽.png" alt="" />
 								<div class="single_work_overlay">
-									<h4>glow with eden</h4>
+									<h5 style="font-weight: bold; color: black;"><a style="color: black;" href="/product/detail_before?p_id=241">더슬릭 립스틱 크림매트</a></h5>
 									<div class="separator"></div>
+									<p style="font-weight: bold; color: black;">20,800원</p>
 									<p></p>
 								</div>
 							</div>
@@ -332,7 +341,9 @@
 							<div class="single_mixi_portfolio">
 								<img src="/resources/assets/images/왼쪽.png" alt="" />
 								<div class="single_work_overlay single_work_overlay2">
-									<h4>glow with eden</h4>
+									<h5 style="font-weight: bold; color: black;"><a style="color: black;" href="/product/detail_before?p_id=250">허쉬드 체리 에디션</a></h5>
+									<div class="separator"></div>
+									<p style="font-weight: bold; color: black;">13,600원</p>
 									<p></p>
 								</div>
 							</div>
@@ -343,7 +354,7 @@
 								<img src="/resources/assets/images/100.jpg" alt="" />
 								<div class="single_work_overlay single_work_overlay2">
 									<h5
-										style="font-weight: bold; color: black; margin-bottom: -1.5rem;">
+										style="font-weight: bold; color: black;">
 										<a style="color: black;"
 											href="/product/detail_before?p_id=309">바이플라워 블러셔</a>
 									</h5>
@@ -360,7 +371,7 @@
 									<h5
 										style="font-weight: bold; color: black; margin-bottom: -1.5rem;">
 										<a style="color: black;"
-											href="/product/detail_before?p_id=234">바이플라워 에코 크레용 립 벨벳</a>
+											href="/product/detail_before?p_id=234">바이플라워 립 벨벳</a>
 									</h5>
 									<div class="separator"></div>
 									<p style="font-weight: bold; color: black;">3,900원</p>
@@ -393,7 +404,7 @@
 						<div class="sp-thumbnails"
 							style="display: flex; justify-content: center;">
 							<div style="margin: 10px; text-align: center;">
-								<a href="/product/detail_before?p_id=255"> <img
+								<a href="/product/detail_before?p_id=338"> <img
 									style="width: 500px; height: 282px; cursor: pointer;"
 									class="sp-thumbnail" src="/resources/assets/images/image1.jpg" /></a>
 								<p
@@ -403,7 +414,7 @@
 									컬러와 지속력을 자랑하는 틴트</p>
 							</div>
 							<div style="margin: 10px; text-align: center;">
-								<a href="/product/detail_before?p_id=292"> <img
+								<a href="/product/detail_before?p_id=339"> <img
 									style="width: 500px; height: 282px; cursor: pointer;"
 									class="sp-thumbnail" src="/resources/assets/images/image2.jpg" /></a>
 								<p
