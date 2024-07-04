@@ -1,5 +1,6 @@
 package com.example.cosmetic.controller.order;
 
+import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -51,31 +52,29 @@ import org.springframework.web.bind.annotation.RequestBody;
 @Controller
 @RequestMapping("/order/")
 public class OrderController {
-	
+
+	//포트원 api 키
 	private static final String KEY = "6746882717766507";
 	private static final String SECRET = "wwGfcjpUcw74nxulMRj9ZKMeT3h8tZtiytjDoc9XDjlhrXUyrB9vvY7vDalSFvrT5ciMw5REpV0IZlGK";
 	
 	@Autowired
 	OrderDAO orderDAO;
 	
-	// 장바구니의 주문하기 버튼 > 주문서 작성페이지
+	// 장바구니 주문하기 > 주문서 작성페이지
 	@PostMapping("orderform.do")
 	public String orderform(
-			@RequestParam(name = "cart_id", required = false) String[] c_ids,
-			@RequestParam(name = "option_txt", defaultValue = "") String[] options,
-			@RequestParam(name = "p_order_id") String[] productIds, 
+			@RequestParam(name = "cartid", required = false) String[] cIds,
+			@RequestParam(name = "optiontxt", defaultValue = "") String[] options,
+			@RequestParam(name = "pOrderId") String[] productIds,
 			@RequestParam(name = "amount") String[] amounts,
-
 			@RequestParam(name = "price") int price, 
 			@RequestParam(name = "delfee") int delfee,
 			@RequestParam(name = "totalPrice") int totalPrice, 
 			HttpSession session, Model model) {
 		
-		Pattern pattern = Pattern.compile("\\d");
-
-        for (int i = 0; i < options.length; i++) {
-            if (pattern.matcher(options[i]).find()) { // 숫자가 있는지 확인
-                options[i] = ""; // 배열 값을 빈 문자열로 변경
+		for (int i = 0; i < options.length; i++) {
+            if (options[i].equals("없음")) { // 옵션이 있는지 확인
+                options[i] = ""; // 옵션 배열 값을 빈 문자열로 변경
             }
         }
 		
@@ -92,35 +91,28 @@ public class OrderController {
 
 		for (int i = 0; i < amounts.length; i++) {
 
-			int p_id = Integer.parseInt(productIds[i]);
+			int pid = Integer.parseInt(productIds[i]);
 			int amount = Integer.parseInt(amounts[i]);
-			int c_id = Integer.parseInt(c_ids[i]);
+			int cid = Integer.parseInt(cIds[i]);
 			String option = options[i];
 
 			// p_id값으로 상품정보 가져오기
 			// 이미지, 상품명, 상품가격
-			String p_name = (String) orderDAO.orderedProducts(p_id).get("p_name");
-			String file_name = (String) orderDAO.orderedProducts(p_id).get("file_name");
-			
-			String split_str = "src/main/webapp";
-			String[] parts = file_name.split(split_str);
-			if (parts.length > 1) {
-			    file_name = "/" + (parts[1].startsWith("/") ? parts[1].substring(1) : parts[1]);
-			} else {
-			    file_name = parts[0];
-			}
-			
-			int p_price = (int) orderDAO.orderedProducts(p_id).get("p_price");
+			String pName = (String) orderDAO.orderedProducts(pid).get("p_name");
+			String filePath = (String) orderDAO.orderedProducts(pid).get("file_name");
+			String fileName = filePath.replace("src/main/webapp", "");
+			int pPrice = (int) orderDAO.orderedProducts(pid).get("p_price");
+
 			// 정보를 map으로 합치기
 			Map<String, Object> map = new HashMap<>();
-			map.put("p_id", p_id);
-			map.put("c_id", c_id);
+			map.put("pid", pid);
+			map.put("cid", cid);
 			map.put("option", option);
-			map.put("file_name", file_name);
-			map.put("p_price", p_price);
+			map.put("fileName", fileName);
+			map.put("pPrice", pPrice);
 			map.put("amount", amount);
-			map.put("p_name", p_name);
-			list.add(map);
+			map.put("pName", pName);
+			list.add(map); //개별 상품 정보를 리스트에 넣기
 		}
 
 		// 포인트
@@ -140,29 +132,28 @@ public class OrderController {
 		return "/product/order/order_form";
 	}
 
-	// 바로 구매시
+	// 개별 주문 > 주문서 작성페이지
 	@PostMapping("orderform_item.do")
 	public String orderform_item(
 			@RequestParam(name = "option", defaultValue = "") String[] options,
-			@RequestParam(name = "cart_id", required = false) String[] c_id1,
-			@RequestParam(name = "p_order_id") String[] productId1, 
-			@RequestParam(name = "amount") String[] amount1,
+			@RequestParam(name = "cartid", required = false) String[] cartids,
+			@RequestParam(name = "pOrderId") String[] pOrderIds,
+			@RequestParam(name = "amount") String[] amounts,
 
-			@RequestParam(name = "p_o_price") String price1,
-			@RequestParam(name = "delfee") String delfee1,
-			@RequestParam(name = "totalPrice") String totalPrice1, 
+			@RequestParam(name = "pOPrice") int price,
+			@RequestParam(name = "delfee") int delfee,
+			@RequestParam(name = "totalPrice") int totalPrice,
 			HttpSession session, Model model) {
-		
-		Pattern pattern = Pattern.compile("\\d");
-		
-		for (int i = 0; i < options.length; i++) {
-            if (pattern.matcher(options[i]).find()) { // 숫자가 있는지 확인
-                options[i] = ""; // 배열 값을 빈 문자열로 변경
-            }
-        }
-		
-		if (options.length == 0) {
-			 options = new String[]{""};
+
+		//상품 옵션 처리
+		if (options.length == 0) { //바로구매 > 주문페이지
+			options = new String[]{""}; //빈 옵션 배열 생성
+		} else {
+			for (int i = 0; i < options.length; i++) { //장바구니 개별구매 > 주문페이지
+				if (options[i].equals("없음")) { // 옵션이 있는지 확인
+					options[i] = ""; // 옵션 배열 값을 빈 문자열로 변경
+				}
+			}
 		}
 		
 		// session에서 userid 가져오기
@@ -176,60 +167,49 @@ public class OrderController {
 		// 상품정보 개별적으로 주문 아이템 테이블에 넣기
 		List<Map<String, Object>> list = new ArrayList<>();
 		
-		for (int i=0; i<amount1.length; i++) {
-			int p_id = Integer.parseInt(productId1[i]); 
-			int amount = Integer.parseInt(amount1[i]);
+		for (int i=0; i<amounts.length; i++) {
+			int pid = Integer.parseInt(pOrderIds[i]);
+			int amount = Integer.parseInt(amounts[i]);
 			String option = options[i];
 			
 			//p_id값으로 상품정보 가져오기 //이미지, 상품명, 상품가격 
-			String p_name = (String) orderDAO.orderedProducts(p_id).get("p_name"); 
-			String file_name = (String) orderDAO.orderedProducts(p_id).get("file_name");
-			
-			String split_str = "src/main/webapp";
-			String[] parts = file_name.split(split_str);
-			if (parts.length > 1) {
-			    file_name = "/" + (parts[1].startsWith("/") ? parts[1].substring(1) : parts[1]);
-			} else {
-			    file_name = parts[0];
+			String pName = (String) orderDAO.orderedProducts(pid).get("p_name");
+			String filePath = (String) orderDAO.orderedProducts(pid).get("file_name");
+			String fileName = filePath.replace("src/main/webapp", "");
+			int pPrice = (int) orderDAO.orderedProducts(pid).get("p_price");
+			  
+			//정보를 map으로 합치기
+			Map<String, Object> map = new HashMap<>();
+			map.put("pid", pid);
+			map.put("amount", amount);
+			map.put("option", option);
+			map.put("pName", pName);
+			map.put("fileName", fileName);
+			map.put("pPrice", pPrice);
+			  
+			if (cartids != null) {
+				int cid = Integer.parseInt(cartids[i]);
+				map.put("cid", cid);
 			}
-			
-			  int p_price = (int) orderDAO.orderedProducts(p_id).get("p_price");
 			  
-			  //정보를 map으로 합치기 
-			  Map<String, Object> map = new HashMap<>(); 
-			  map.put("p_id", p_id); 
-			  map.put("amount", amount); 
-			 map.put("option", option);
-			  map.put("p_name", p_name);
-				map.put("file_name", file_name); 
-				map.put("p_price", p_price);
-			  
-			if (c_id1 != null) {
-					int c_id = Integer.parseInt(c_id1[i]);
-					map.put("c_id", c_id);  
-				}
-			  
-			  list.add(map);
+			list.add(map);
 		}
-		int price = Integer.parseInt(price1);
-		int delfee = Integer.parseInt(delfee1);
-		int totalPrice = Integer.parseInt(totalPrice1);
 		  
-		   
-		  
-		  //포인트 
-		  int currentPoint = orderDAO.showPoint(userid); //보유한 포인트 
-		  int addPoint = (int) Math.round(price * 0.5); //포인트 비율 설정
-		  
-		  //다음페이지로 전달 
-		  model.addAttribute("list", list);
-		  model.addAttribute("options", options);
-		  model.addAttribute("price", price);
-		  model.addAttribute("delfee", delfee);
-		  model.addAttribute("totalPrice", totalPrice);
-		  
-		  model.addAttribute("currentPoint", currentPoint);
-		  model.addAttribute("addPoint", addPoint);
+		//포인트
+		int currentPoint = orderDAO.showPoint(userid); //보유한 포인트
+		int addPoint = (int) Math.round(price * 0.01); //포인트 비율 설정
+
+		//다음페이지로 전달
+		//주문 정보 표현
+		model.addAttribute("list", list);
+		model.addAttribute("options", options);
+
+		//결제시 합계금액 및 포인트 전달
+		model.addAttribute("price", price);
+		model.addAttribute("delfee", delfee);
+		model.addAttribute("totalPrice", totalPrice);
+		model.addAttribute("currentPoint", currentPoint);
+		model.addAttribute("addPoint", addPoint);
 		 
 		return "/product/order/order_form";
 	}
@@ -239,20 +219,26 @@ public class OrderController {
 	public String order(
 			@RequestParam(name = "IMPCode", required = false) long IMPCode,
 			
-			@RequestParam(name = "p_id") String[] productIds,
-			@RequestParam(name = "c_id", required = false) String[] cartIds,
+			@RequestParam(name = "pid") String[] productIds,
+			@RequestParam(name = "cid", required = false) String[] cartIds,
 			@RequestParam(name = "amount") String[] amounts,
-			@RequestParam(name = "option_name", defaultValue = "") String[] options,
+			@RequestParam(name = "optionName", defaultValue = "") String[] options,
 			
-			@RequestParam(name = "price") int price, @RequestParam(name = "deliverCost") int deliverCost,
-			@RequestParam(name = "totalPrice") int totalPrice, @RequestParam(name = "method") String method,
-			@RequestParam(name = "username") String username, @RequestParam(name = "zipcode") String zipcode,
-			@RequestParam(name = "address1") String address1, @RequestParam(name = "address2") String address2,
-			@RequestParam(name = "tel") String tel, @RequestParam(name = "addPoint") int addPoint,
+			@RequestParam(name = "price") int price, 
+			@RequestParam(name = "deliverCost") int deliverCost,
+			@RequestParam(name = "totalPrice") int totalPrice, 
+			@RequestParam(name = "method") String method,
+			@RequestParam(name = "username") String username, 
+			@RequestParam(name = "zipcode") String zipcode,
+			@RequestParam(name = "address1") String address1, 
+			@RequestParam(name = "address2") String address2,
+			@RequestParam(name = "tel") String tel, 
+			@RequestParam(name = "addPoint") int addPoint,
 			@RequestParam(name = "usedPoint") int usedPoint,
 
 			HttpSession session, Model model) {
 		
+		//옵션 없을경우 빈 배열 생성
 		if (options.length == 0) {
 			 options = new String[]{""};
 		}
@@ -273,12 +259,13 @@ public class OrderController {
 		for (int i = 0; i < productIds.length; i++) {
 
 			Map<String, Object> map = new HashMap<>();
-			map.put("o_name", options[i]);
-			map.put("p_id", productIds[i]);
+			map.put("oName", options[i]);
+			map.put("pid", productIds[i]);
 			map.put("amount", amounts[i]);
 			map.put("orderstatus", "결제완료");
 			map.put("orderid", IMPCode);
-			orderDAO.orderItemInsert(map);
+			
+			orderDAO.orderItemInsert(map); //주문 아이템 테이블에 insert
 
 			// 주문 아이템 테이블의 primary key값을 배열로 담아 가져오기
 			int idx = orderDAO.getId();
@@ -291,13 +278,12 @@ public class OrderController {
 		if (newPoint < 0) {
 			newPoint = 0;
 		}
-		pointinfo.put("point", newPoint);
+		pointinfo.put("npoint", newPoint);
 		pointinfo.put("userid", userid);
-		orderDAO.pointUpdate(pointinfo);
+		orderDAO.pointUpdate(pointinfo); //주문테이블에 포인트 업데이트
 
 		// 총합계 계산
 		totalPrice = totalPrice - usedPoint;
-		
 		if (totalPrice < 0) {
 			totalPrice = 0;
 		}
@@ -312,44 +298,36 @@ public class OrderController {
 		for (int itemId : orderItemIds) {
 			
 			// 주문 아이템 테이블에서 p_id, amount, 주문상태 꺼내오기
-			int p_id = (int) orderDAO.orderItems(itemId).get("p_id");
+			int pid = (int) orderDAO.orderItems(itemId).get("p_id");
 			int amount = (int) orderDAO.orderItems(itemId).get("amount");
 			String orderStatus = (String) orderDAO.orderItems(itemId).get("orderStatus");
-			String o_name = (String) orderDAO.orderItems(itemId).get("o_name");
+			String oname = (String) orderDAO.orderItems(itemId).get("o_name");
 			
 			// p_id값으로 상품정보 가져오기
 			// 이미지, 상품명, 상품가격
-			String p_name = (String) orderDAO.orderedProducts(p_id).get("p_name");
-			String file_name = (String) orderDAO.orderedProducts(p_id).get("file_name");
-			//System.out.println("원본="+file_name);
-			String split_str = "src/main/webapp";
-			String[] parts = file_name.split(split_str);
-			if (parts.length > 1) {
-			    file_name = "/" + (parts[1].startsWith("/") ? parts[1].substring(1) : parts[1]);
-			} else {
-			    file_name = parts[0];
-			}
-			//System.out.println("replace="+file_name);
-			int p_price = (int) orderDAO.orderedProducts(p_id).get("p_price");
+			String pName = (String) orderDAO.orderedProducts(pid).get("p_name");
+			String filePath = (String) orderDAO.orderedProducts(pid).get("file_name");
+			String fileName = filePath.replace("src/main/webapp", "");
+			int pPrice = (int) orderDAO.orderedProducts(pid).get("p_price");
 
-			
-			
+			//상품 테이블에서 수량 감소
 			//옵션 있을 경우
-			if (!o_name.equals("없음") && !o_name.equals("")) {
-				
-				//주문시 상품테이블에서 수량 감소
+			if (oname != null && !oname.equals("없음") && !oname.equals("")) {
+
 				int PAmount = 0;
 				int PItemAmount = 0;
 				
 				Map<String, Object> amountInfo = new HashMap<>();
 				
-				amountInfo.put("p_id", p_id);
-				amountInfo.put("o_name", o_name);
+				amountInfo.put("pid", pid);
+				amountInfo.put("oName", oname);
 				amountInfo.put("orderItemId", itemId);
-				
+
+				//수량 가져오기
 				PAmount = orderDAO.pAmount(amountInfo);
 				PItemAmount = orderDAO.pItemAmount(amountInfo);
-				
+
+				//수량 감소
 				PItemAmount -= amount;
 				PAmount -= amount;
 				
@@ -362,21 +340,22 @@ public class OrderController {
 
 				amountInfo.put("PItemAmount", PItemAmount);
 				amountInfo.put("PAmount", PAmount);
-				
+
+				//상품 및 옵션 테이블에 수량 입력
 				orderDAO.pItemUpdateAmount(amountInfo);
 				orderDAO.pUpdateAmount(amountInfo);
 				
 			} else { //옵션 없을 경우
-				
-				//주문시 상품테이블에서 수량 감소
+
 				int PAmount = 0;
 				
 				Map<String, Object> amountInfo = new HashMap<>();
 				
-				amountInfo.put("p_id", p_id);
+				amountInfo.put("p_id", pid);
 				amountInfo.put("p_stock", amount);
-				
-				PAmount = orderDAO.p_no_option_amount(p_id);
+
+				//수량 가져오기
+				PAmount = orderDAO.pNoOptionAmount(pid);
 				
 				PAmount -= amount;
 				
@@ -385,49 +364,41 @@ public class OrderController {
 				}
 
 				amountInfo.put("PAmount", PAmount);
-				
-				orderDAO.p_no_o_amount_update(amountInfo);
+
+				//상품 테이블에 수량 입력
+				orderDAO.pNoOptionAmountUpdate(amountInfo);
 			}
 			
-			
 			//판매수량 업데이트
-			orderDAO.p_sell_update(p_id);
-			
+			orderDAO.pSellUpdate(pid);
+
+			//결과 페이지에서 출력할 데이터
 			// 정보를 map으로 합친 후 orderitems 리스트에 넣기
 			Map<String, Object> map = new HashMap<>();
-			map.put("p_id", p_id);
-			map.put("file_name", file_name);
-			map.put("p_price", p_price);
+			map.put("pid", pid);
+			map.put("fileName", fileName);
+			map.put("pPrice", pPrice);
 			map.put("amount", amount);
-			map.put("o_name", o_name);
-			map.put("p_id", p_id);
+			map.put("oName", oname);
 			map.put("orderStatus", orderStatus);
-			map.put("p_name", p_name);
+			map.put("pName", pName);
 
 			orderitems.add(map);
 		}
 
-		// 주문 테이블 출력하기
-		// 주문 아이템 id 배열을 json 문자열 배열로 만들기
-//		ObjectMapper mapper = new ObjectMapper();
-//		String itemIds_JSON = null;
-//		int[] itemIdsArray = null;
-//
-//		try {
-//			itemIds_JSON = mapper.writeValueAsString(orderItemIds);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//		
-//		//orderItemId 사용안할경우
-//		itemIds_JSON = null;
-		
+		// 주문확인된 제품 cart에서 지우기
+		if (cartIds != null && cartIds.length > 0 && cartIds[0] != null && !cartIds[0].equals("")) {
+			for (String cid : cartIds) {
+				int id = Integer.parseInt(cid.trim());
+				orderDAO.cartDelete(id);
+			}
+		}
+
 		// dto로 전달
 		OrderDTO dto = new OrderDTO();
 
 		dto.setOrderid(IMPCode);
 		dto.setUserid(userid);
-//		dto.setOrderItemId(0); // json 배열 값 넣기
 
 		dto.setPrice(price);
 		dto.setDeliverCost(deliverCost);
@@ -441,29 +412,19 @@ public class OrderController {
 		dto.setTel(tel);
 		dto.setUserPoint(addPoint);
 
-		// 데이터 삽입
+		// 주문 테이블에 데이터 삽입
 		orderDAO.orderInsert(dto);
 
 		// 데이터 불러오기
 		long idx = orderDAO.getOrderId(); // 추가된 데이터의 기본키 값 가져오기
-		
-		OrderDTO order = orderDAO.orderSelect(idx);
+		OrderDTO order = orderDAO.orderSelect(idx); //주문정보 가져오기
 
 		// 데이터 전달
-		model.addAttribute("order", order); // 주문 테이블
-		model.addAttribute("orderitems", orderitems); // 주문 아이템 테이블
+		model.addAttribute("order", order); // 주문 정보
+		model.addAttribute("orderitems", orderitems); // 주문 아이템 정보
 		model.addAttribute("userPoint", userPoint); // 보유한 포인트
 		model.addAttribute("usedPoint", usedPoint); // 사용한 포인트
 		
-		
-		// 주문확인된 제품 cart에서 지우기
-		if (cartIds != null && cartIds.length > 0 && cartIds[0] != null && !cartIds[0].equals("")) {
-			for (String c_id : cartIds) {
-				int id = Integer.parseInt(c_id.trim());
-				orderDAO.cartDelete(id);
-			}
-		} 
-
 		return "/product/order/order_result";
 	}
 
@@ -471,8 +432,8 @@ public class OrderController {
 	@GetMapping("orderlist.do")
 	public String orderlist(
 			@RequestParam(name = "curPage", defaultValue = "1") int curPage,
-			@RequestParam(name = "f_date", defaultValue = "") String  f_date,
-			@RequestParam(name = "l_date", defaultValue = "") String l_date,
+			@RequestParam(name = "f_date", defaultValue = "") String  Fdate,
+			@RequestParam(name = "l_date", defaultValue = "") String Ldate,
 			@RequestParam(name = "status", defaultValue = "") String status,
 			HttpSession session, Model model
 			) {
@@ -480,17 +441,16 @@ public class OrderController {
 		// session에서 userid 가져오기
 		String userid = (String) session.getAttribute("userid");
 		
-		
 		// 주문목록 가져오기
-		List<OrderDTO> list = null;
+		List<Map<String, Object>> list = null;
 		
 		String fDate = "";
 		String lDate = "";
 		
 		//날짜 설정
-		if (!f_date.equals("") && !l_date.equals("")) {
-			fDate = f_date.toString() + " 00:00:00";
-			lDate = l_date.toString() + " 23:59:59";
+		if (!Fdate.equals("") && !Ldate.equals("")) {
+			fDate = Fdate.toString() + " 00:00:00";
+			lDate = Ldate.toString() + " 23:59:59";
 		}
 		
 		//주문 목록에 조건 추가
@@ -504,84 +464,34 @@ public class OrderController {
 		int count = orderDAO.orderCount(listInfo);
 		
 		//페이지 계산
-		PageUtil page_info = new PageUtil(count, curPage);
-		int start = page_info.getPageBegin() - 1;
-		int pageCnt = page_info.PAGE_SCALE;
+		PageUtil pageInfo = new PageUtil(count, curPage);
+		int start = pageInfo.getPageBegin() - 1;
+		int pageCnt = pageInfo.PAGE_SCALE;
 		
 		listInfo.put("start", start);
 		listInfo.put("pageCnt", pageCnt);
 		
 		//목록 출력
 		list = orderDAO.orderList(listInfo);
-		//중복 없는 주문 id 가져오기
-		Set<Long> getIds = new HashSet<>();
+		System.out.println(list);
 		
 		//주문 상태 세기
-		Map<String, Object> s = new HashMap<>();
-		s.put("userid", userid);
-		s.put("startDate", fDate);
-		s.put("endDate", lDate);
+		Map<String, Object> Scount = new HashMap<>();
+		Scount.put("userid", userid);
+		Scount.put("startDate", fDate);
+		Scount.put("endDate", lDate);
 		
 		int [] statusArray = new int[5];
 		
 		for (int i=0; i<5; i++) {
-			s.put("status", i+1);
-			int num = orderDAO.countStatus(s);
+			Scount.put("status", i+1);
+			int num = orderDAO.countStatus(Scount);
 			statusArray[i] = num;
 		}
 
-		//상품정보 가져오기
-		List<Map<String, Object>> orderitemlist = new ArrayList<>();
-
-		for (OrderDTO item : list) {
-			int p_id = item.getP_id();
-
-			Map<String, Object> order = new HashMap<>();
-
-			// p_id값으로 상품정보 가져오기
-			// 이미지, 상품명, 상품가격
-			String p_name = (String) orderDAO.orderedProducts(p_id).get("p_name");
-			String file_name = (String) orderDAO.orderedProducts(p_id).get("file_name");
-			//System.out.println("원본="+file_name);
-			String split_str = "src/main/webapp";
-			String[] parts = file_name.split(split_str);
-			if (parts.length > 1) {
-			    file_name = "/" + (parts[1].startsWith("/") ? parts[1].substring(1) : parts[1]);
-			} else {
-			    file_name = parts[0];
-			}
-			//System.out.println("replace="+file_name);
-			int p_price = (int) orderDAO.orderedProducts(p_id).get("p_price");
-
-			
-			// 정보를 map으로 합친 후 orderitems 리스트에 넣기
-			Map<String, Object> map = new HashMap<>();
-			
-			map.put("idx", item.getOrderItemId());
-			map.put("orderDate", item.getOrderDate());
-			map.put("p_id", p_id);
-			map.put("file_name", file_name);
-			map.put("p_price", p_price);
-			map.put("amount", item.getAmount());
-			map.put("o_name", item.getO_name());
-			map.put("orderStatus", item.getOrderStatus());
-			map.put("p_name", p_name);
-
-			order.put("orderid", item.getOrderid());
-			order.put("totalPrice", item.getTotalPrice());
-			order.put("map", map);
-			
-			//중복제거된 id전달
-			getIds.add(item.getOrderid());
-			
-			orderitemlist.add(order);
-		}
-
 		// 데이터 보내기
-		model.addAttribute("page_info", page_info);
-		model.addAttribute("order", orderitemlist);
-		model.addAttribute("list", list); // 모델에 배열 추가
-		model.addAttribute("getIds", getIds);
+		model.addAttribute("list", list);
+		model.addAttribute("page_info", pageInfo);
 		model.addAttribute("count", count);
 		
 		//날짜 보내기

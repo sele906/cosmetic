@@ -156,6 +156,7 @@
 #orderTable .imgBox {
  	width: 100px;
 	height: 100px;
+	margin: 0 15px 0 0;
 }
 #orderTable .Pname {
 	width: 100%;
@@ -721,7 +722,7 @@ if (urlParams != null) {
 		<th>진행현황</th>
 	</tr>
 	
-	<c:if test="${empty order}">
+	<c:if test="${empty list}">
 	<tbody>
 	<tr>
 		<td colspan="4" id="emptyB">
@@ -730,29 +731,30 @@ if (urlParams != null) {
 	</tr>
 	</tbody>
 	</c:if>
-	
-	<c:if test="${!empty order}">
+
+	<c:if test="${!empty list}">
 	<tbody>
-	<c:forEach var="row" items="${order}">
+	<c:forEach var="row" items="${list}">
 	<tr>
 		<td>
 			<p class="i">
 				${row.orderid}
 			</p>
 			<p class="d">
-				<fmt:formatDate value="${row.map.orderDate}" dateStyle="medium"/>
+			    <fmt:parseDate value="${ row.orderDate }" pattern="yyyy-MM-dd'T'HH:mm" var="parsedDateTime" type="both" />
+                <fmt:formatDate pattern="dd.MM.yyyy HH:mm" value="${ parsedDateTime }" />
 			</p>
 		</td>
 		<td>
 			<div class="p_info">
 				<div class="imgBox">
-					<img src="${row.map.file_name}">
+					<img src="${row.file_name}">
 				</div>
 				<div class="Pname">
-				<a href="/product/detail_before?p_id=${row.map.p_id}">
-					${row.map.p_name}
-					<c:if test="${not empty row.map.o_name}">
-						| ${row.map.o_name}
+				<a href="/product/detail_before?p_id=${row.p_id}">
+					${row.p_name}
+					<c:if test="${not empty row.o_name}">
+						| ${row.o_name}
 					</c:if>
 				</a>
 				</div>
@@ -761,61 +763,61 @@ if (urlParams != null) {
 		<td>
 		
 		<c:choose>
-			<c:when test="${row.map.orderStatus == '반품완료' || row.map.orderStatus == '결제취소'}">
+			<c:when test="${row.orderStatus == '반품완료' || row.orderStatus == '결제취소'}">
 				<div class="p" style="color: gray;">
-				<del><fmt:formatNumber value="${row.map.p_price * row.map.amount}" pattern="#,###"/>원</del>
+				<del><fmt:formatNumber value="${row.p_price * row.amount}" pattern="#,###"/>원</del>
 				</div>
 			</c:when>
 			<c:otherwise>
 				<div class="p" style="color: red;">
-				<fmt:formatNumber value="${row.map.p_price * row.map.amount}" pattern="#,###"/>원
+				<fmt:formatNumber value="${row.p_price * row.amount}" pattern="#,###"/>원
 				</div>
 			</c:otherwise>
 		</c:choose>
 		
-			/<div class="a">${row.map.amount}개</div>
+			/<div class="a">${row.amount}개</div>
 		</td>
 		
 		<td>
-			<c:if test="${row.map.orderStatus == '결제완료'}">
+			<c:if test="${row.orderStatus == '결제완료'}">
 				<p>결제완료</p>
 			</c:if>
-			<c:if test="${row.map.orderStatus == '배송중'}">
+			<c:if test="${row.orderStatus == '배송중'}">
 				<p>배송중</p>
 			</c:if>
-			<c:if test="${row.map.orderStatus == '배송완료'}">
+			<c:if test="${row.orderStatus == '배송완료'}">
 				<p>배송완료</p>
 			</c:if>
-			<c:if test="${row.map.orderStatus == '반품요청'}">
+			<c:if test="${row.orderStatus == '반품요청'}">
 				<p>반품요청</p>
 			</c:if>
-			<c:if test="${row.map.orderStatus == '반품완료'}">
+			<c:if test="${row.orderStatus == '반품완료'}">
 				<p>반품완료</p>
 			</c:if>
-			<c:if test="${row.map.orderStatus == '결제취소'}">
+			<c:if test="${row.orderStatus == '결제취소'}">
 				<p>결제취소</p>
 			</c:if>
 			
 			<c:choose>
 			
-				<c:when test="${row.map.orderStatus == '결제완료'}">
-					<button type="button" onclick="redoOrder(${row.orderid}, ${row.map.idx}, ${row.map.p_price}, ${row.map.amount})">결제 취소</button>
+				<c:when test="${row.orderStatus == '결제완료'}">
+					<button type="button" onclick="redoOrder(${row.orderid}, ${row.idx}, ${row.p_price}, ${row.amount})">결제 취소</button>
 				</c:when>
 				
-				<c:when test="${row.map.orderStatus == '배송완료'}">
-					<button type="button" onclick="updateStatus(${row.orderid}, ${row.map.idx})" class="btn_s">반품 요청</button>
-					<button type="button" id="btnOpenModal" class="btn_s" onclick="write_review(${row.map.p_id})">리뷰 등록</button>
+				<c:when test="${row.orderStatus == '배송완료'}">
+					<button type="button" onclick="updateStatus(${row.orderid}, ${row.idx})" class="btn_s">반품 요청</button>
+					<button type="button" id="btnOpenModal" class="btn_s" onclick="write_review(${row.p_id})">리뷰 등록</button>
 				</c:when>
 			
-				<c:when test="${row.map.orderStatus == '반품요청'}">
-					<button type="button" onclick="redoStatus(${row.map.idx})">반품 취소</button>
+				<c:when test="${row.orderStatus == '반품요청'}">
+					<button type="button" onclick="redoStatus(${row.idx})">반품 취소</button>
 				</c:when>
 				
-				<c:when test="${row.map.orderStatus == '반품완료'}">
+				<c:when test="${row.orderStatus == '반품완료'}">
 				</c:when>
 				
 				<%-- <c:otherwise>
-					<button type="button" onclick="updateStatus(${row.orderid}, ${row.map.idx})">반품 요청</button>
+					<button type="button" onclick="updateStatus(${row.orderid}, ${row.idx})">반품 요청</button>
 				</c:otherwise> --%>
 				
 			</c:choose>

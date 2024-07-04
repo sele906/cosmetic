@@ -79,7 +79,7 @@ public class OrderDAO {
 	}
 	
 	//주문 목록 출력
-	public List<OrderDTO> orderList(Map<String, Object> map) {
+	public List<Map<String, Object>> orderList(Map<String, Object> map) {
 		return sqlSession.selectList("order.orderList", map);
 	}
 	
@@ -149,8 +149,8 @@ public class OrderDAO {
 		return sqlSession.selectOne("order.pAmount", map);
 	}
 	//옵션 없는 상품수량 확인
-	public int p_no_option_amount(int p_id) {
-		return sqlSession.selectOne("order.p_no_option_amount", p_id);
+	public int pNoOptionAmount(int pid) {
+		return sqlSession.selectOne("order.pNoOptionAmount", pid);
 	}
 	
 	//상품수량 업데이트
@@ -161,13 +161,13 @@ public class OrderDAO {
 		sqlSession.update("order.pUpdateAmount", map);
 	}
 	//옵션 없을 때 상품수량 업데이트
-	public void p_no_o_amount_update(Map<String, Object> map) {
-		sqlSession.update("order.p_no_o_amount_update", map);
+	public void pNoOptionAmountUpdate(Map<String, Object> map) {
+		sqlSession.update("order.pNoOptionAmountUpdate", map);
 	}
 	
 	//상품 판매 수량 업데이트
-	public void p_sell_update(int p_id) {
-		sqlSession.update("order.p_sell_update", p_id);
+	public void pSellUpdate(int pid) {
+		sqlSession.update("order.pSellUpdate", pid);
 	}
 	
 	

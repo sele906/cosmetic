@@ -521,12 +521,12 @@ $(document).ready(function() {
        } else if (amountArray.length != 0) {
           var formData = new FormData();
           
-          formData.append('p_o_price', price); 
+          formData.append('pOPrice', price); 
            formData.append('delfee', delfee);
            formData.append('totalPrice', totalPrice); 
           
           for (i=0; i<amountArray.length; i++) {
-             formData.append('p_order_id', p_id_array[i]);
+             formData.append('pOrderId', p_id_array[i]);
              formData.append('amount', amountArray[i]);
              formData.append('option', optionArray[i]);
           }
@@ -538,6 +538,7 @@ $(document).ready(function() {
              input.setAttribute("name", pair[0]);
              input.setAttribute("value", pair[1]);
              formElement.appendChild(input);
+			 console.log(pair)
          } 
          
          formElement.method = "post";
@@ -1065,8 +1066,13 @@ function cart_insert() {
         data: JSON.stringify({ p_id: productId, options: selectedOptions }),
         contentType: "application/json",
         success: function(response) {
-            alert("장바구니에 상품이 추가되었습니다.");
-            window.location.href = '/cart/list';
+            if (response == "success") {
+                alert("장바구니에 상품이 추가되었습니다.");
+                window.location.href = '/cart/list';
+            } else if (response == "null") {
+                alert("로그인 후 이용바랍니다.");
+                window.location.href = '/member/page_login';
+            }
         },
         error: function(xhr, status, error) {
             alert("장바구니에 상품을 추가하는 데 실패했습니다.");

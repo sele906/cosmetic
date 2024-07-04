@@ -34,8 +34,6 @@ function zzim_del(c_id) {
     var confirmDelete = window.confirm("해당 상품을 삭제 하시겠습니까?");
     if (confirmDelete) {
         location.href = "/cart/delete/" + c_id;
-    } else {
-        console.log("삭제가 취소되었습니다.");
     }
 }
 
@@ -77,7 +75,6 @@ $(function() {
 		            alert("삭제할 상품을 선택해주세요");
 		            return;
 		        }
-		        console.log(selectedItems);
 
 		        if (confirm("선택한 상품을 삭제하시겠습니까?")) {
 		            $.ajax({
@@ -85,7 +82,6 @@ $(function() {
 		                type: "POST",
 		                data: { nums: selectedItems }, // 여기서 c_id 배열을 보냅니다.
 		                success: function(response) {
-		                    console.log(response);
 		                    location.reload(); // 성공 시 페이지 새로고침
 		                },
 		                error: function(xhr, status, error) {
@@ -453,12 +449,12 @@ select:focus {
 						<td>
 						<input  type="checkbox" name="num" value="${row.c_id}"  >
 						<!-- 주문테이블로 보낼 p_id -->
-						<input type="hidden" name="p_order_id" value="${row.p_id}">
+						<input type="hidden" name="pOrderId" value="${row.p_id}">
 						</td>
 						<td><img style="width: 85px; height: 85px;"src="${fn:replace(row.file_name, 'src/main/webapp', '')}"></td>
 						<td style="font-weight: normal; text-align: left;" > <p style="cursor: pointer;" onclick="window.location.href='/product/detail_before?p_id=${row.p_id}'">${row.p_name}</p>
 						
-						<input type="hidden" name="option_txt" value="${row.o_name}"> <!-- 주문 테이블로 보낼 옵션 -->
+						<input type="hidden" name="optiontxt" value="${row.o_name}"> <!-- 주문 테이블로 보낼 옵션 -->
 						
 						<c:choose>
 						<c:when test="${row.o_name eq '없음'}">
@@ -483,7 +479,7 @@ select:focus {
 						</c:choose>
 						<!-- <span class="icon_flag sale">세일</span> -->
 						</td>
-						<td style="text-align: center; font-weight:bolder; border-left:2px solid whitesmoke; "><span><fmt:formatNumber type="number" value="${row.p_price}" pattern="#,###"></fmt:formatNumber>원</span><input type="hidden" name="p_o_price" value="${row.p_price}"></td>
+						<td style="text-align: center; font-weight:bolder; border-left:2px solid whitesmoke; "><span><fmt:formatNumber type="number" value="${row.p_price}" pattern="#,###"></fmt:formatNumber>원</span><input type="hidden" name="pOPrice" value="${row.p_price}"></td>
 						<br>
 						<td style="border-left: 2px solid whitesmoke; text-align: center;">
    								 <input type="hidden" class="get_c_id" data-c_id="${row.c_id}">
@@ -501,7 +497,7 @@ select:focus {
 									        <option value="10">10</option>
 									    </select>
 									    <input class="amount-hidden" type="hidden" name="amount"> <!-- 주문 테이블로 보낼 amount -->
-									    <input type="hidden" name="cart_id" value="${row.c_id}"> <!-- 주문 테이블로 보낼 cart_id -->
+									    <input type="hidden" name="cartid" value="${row.c_id}"> <!-- 주문 테이블로 보낼 cart_id -->
 									</td>
 
 					
@@ -627,11 +623,8 @@ $(document).ready(function() {
     // select 요소 변경 시 이벤트
     $(document).on('change', '.o_name_btn', function() {
         var o_name = $(this).val();
-        console.log(o_name);
         var c_id = $(this).closest('form').find('input[name="c_id"]').val();
-        console.log(c_id);
         var previousOption = $(this).closest('tr').find('.previous_option').val();
-        console.log(previousOption);
 
         // 이전 옵션과 새로운 옵션이 같지 않은 경우에만 서버로 전송
         if (o_name !== previousOption) {
@@ -662,10 +655,8 @@ $(document).ready(function() {
     $('.AmountSelect').change(function() {
         // 선택된 수량을 가져옵니다.
         var selectedQuantity = $(this).val();
-        console.log(selectedQuantity);
         // 해당 select 요소의 부모 요소에서 상품 ID 값을 가져옵니다.
         var c_id = $(this).closest('td').find('.get_c_id').data('c_id');
-        console.log(c_id);
         // AJAX 요청을 통해 서버에 해당 제품의 수량 정보를 업데이트합니다.
         $.ajax({
             url: '/cart/amount_update', // 서버에서 수량 정보를 업데이트할 경로
@@ -675,7 +666,6 @@ $(document).ready(function() {
                 c_id: c_id // 해당 제품의 ID 값
             },
             success: function(response) {
-                console.log('수량 업데이트 성공');
                 alert('수량이 변경되었습니다.');
                 location.reload();
                 // 여기에 성공 시 수행할 작업 추가
@@ -692,7 +682,6 @@ $(document).ready(function() {
 	   //수량을 input에 담기
 	   $(".AmountSelect").each(function () {
            var selectedValue = $(this).val();
-           console.log(selectedValue);
            $(this).siblings(".amount-hidden").val(selectedValue);
        });
 	   
@@ -714,28 +703,25 @@ $(document).ready(function() {
        });
 
        // cart 단품 구매정보 가져오기
-       var cart_id = $row.find("input[name='cart_id']").val();
-       var p_order_id = $row.find("input[name='p_order_id']").val();
+       var cartid = $row.find("input[name='cartid']").val();
+       var pOrderId = $row.find("input[name='pOrderId']").val();
        var amount = $row.find("input[name='amount']").val();
-       var p_o_price = parseInt($row.find("input[name='p_o_price']").val());
-       var option = $row.find("input[name = 'option_txt']").val().trim();
-       if (/\d/.test(option)) { // 숫자가 있는지 확인하는 정규표현식
-    	    option = "";
-    	} 
+       var pOPrice = parseInt($row.find("input[name='pOPrice']").val());
+       var option = $row.find("input[name = 'optiontxt']").val().trim();
 
-       var delfee = p_o_price >= 30000 ? 0 : 2500;
-       var totalPrice = p_o_price + delfee;
+       var delfee = pOPrice >= 30000 ? 0 : 2500;
+       var totalPrice = pOPrice + delfee;
        
        var formData = new FormData();
        
         // 새로운 데이터 추가
-       formData.append('cart_id', cart_id);
-       formData.append('p_order_id', p_order_id);
+       formData.append('cartid', cartid);
+       formData.append('pOrderId', pOrderId);
        formData.append('amount', amount);
-       formData.append('p_o_price', p_o_price); 
+       formData.append('pOPrice', pOPrice);
        formData.append('delfee', delfee);
        formData.append('totalPrice', totalPrice); 
-    
+	   formData.append('option', option); 
        
        document.getElementById("form2").innerHTML = '';
        
@@ -745,6 +731,7 @@ $(document).ready(function() {
            input.setAttribute("name", pair[0]);
            input.setAttribute("value", pair[1]);
            formElement.appendChild(input);
+		   console.log(pair)
        } 
 
        formElement.method = "post";

@@ -432,7 +432,7 @@ h3 {
 	<!-- 숨기기 -->
 	<div id="p_info" style="display: none;">
 		<c:forEach var="o" items="${options}">
-			${o}<input type="hidden" name="option_name" value="${o}">
+			${o}<input type="hidden" name="optionName" value="${o}">
 		</c:forEach>
 	</div>
 	
@@ -483,9 +483,9 @@ h3 {
 	
 	<div id="info_transfer">
 		<c:forEach var="row" items="${list}">
-			<input type="hidden" name="p_id" value="${row.p_id}">
+			<input type="hidden" name="pid" value="${row.pid}">
 			<input type="hidden" name="amount" value="${row.amount}">
-			<input type="hidden" name="c_id" value="${row.c_id}">
+			<input type="hidden" name="cid" value="${row.cid}">
 		</c:forEach>
 	</div>
 	
@@ -501,14 +501,14 @@ h3 {
 		</tr>
 	<c:forEach var="row" items="${list}">
 		<tr>
-			<td><div class="img"><div><img src="${row.file_name}"/></div></div></td>
+			<td><div class="img"><div><img src="${row.fileName}"/></div></div></td>
 			<td>
-			${row.p_name}
+			${row.pName}
 			<c:if test="${not empty row.option}">
 				| ${row.option}
 			</c:if>
 			</td>
-			<td><fmt:formatNumber pattern="#,###" value="${row.p_price}"></fmt:formatNumber>원</td>
+			<td><fmt:formatNumber pattern="#,###" value="${row.pPrice}"></fmt:formatNumber>원</td>
 			<td>${row.amount}개</td>
 		</tr>
 	</c:forEach>
@@ -771,7 +771,8 @@ function Payment() {
 				})
 				
 				// 회원만 결제 가능
-		        if (userid != null) { 
+				// 회원만 결제 가능
+		        if (userid != null) {
 		            
 		            IMP.init("imp42661322"); // 가맹점 식별코드
 		            IMP.request_pay({

@@ -334,18 +334,18 @@
 <div class="rowBox">
 	<div class="img">
 		<div>
-			<img src="${row.file_name}">
+			<img src="${row.fileName}">
 		</div>
 	</div>
 	<div class="rowInfo">
 		<div>
-			${row.p_name}
-			<c:if test="${not empty row.o_name}">
-				| ${row.o_name}
+			${row.pName}
+			<c:if test="${not empty row.oName}">
+				| ${row.oName}
 			</c:if>
 		</div>
 		<div>
-			상품 금액: <fmt:formatNumber pattern="#,###" value="${row.p_price}"/>원
+			상품 금액: <fmt:formatNumber pattern="#,###" value="${row.pPrice}"/>원
 		</div>
 		<div>
 			상품 수량: ${row.amount}개

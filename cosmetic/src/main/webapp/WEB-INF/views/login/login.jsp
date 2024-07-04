@@ -63,8 +63,99 @@
                 }
             });
         });
+
+		$('#check_test').change(function() {
+			if ($(this).is(':checked')) {
+				// $('#userid').val('alpsiP3');
+				// $('#passwd').val();
+
+				var data = {
+                userid: 'alpsiP3',
+                passwd: 'dhfldhfl'
+            	};
+
+				$.ajax({
+                type: "POST",
+                url: "/member/login",
+                contentType: "application/json",
+                data: JSON.stringify(data),
+                success: function(response) {
+                    // 서버에서 성공 응답을 받았을 때
+                    if (response.success) {
+                        // 로그인 성공 시 처리
+                        window.location.href = "/";
+                    } else {
+                        // 로그인 실패 시 처리
+                        $("#result").css("color","#F07878");
+                    	 $("#result").text(response.message);
+                    }
+                }
+            	});
+
+				$(this).prop('checked', 'false');
+			}
+		});
     });
 </script>
+<style>
+.contactus {
+	margin: 155px 0 0 0;
+}
+#page-wrap {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+	align-items: center;
+	margin: 0 auto;
+}
+#head_title {
+	
+}
+#group {
+	display: flex;
+	flex-direction: row;
+}
+#form-wrap {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	margin: 0 5%;
+}
+#test {
+	width: 300px;
+	margin: 0 0 10px 0;
+}
+#check_test, #check_info {
+	cursor: pointer;
+}
+.form-group {
+	display: flex;
+}
+.form-group label {
+	width: 120px;
+	text-align: left;
+	line-height: 31px;
+	font-weight: bold;
+}
+.form-group input {
+	width: 100%;
+	border: none;
+	border-bottom: 1px solid black;
+	padding: 5px;
+}
+#loginBtn {
+	height: 60px;
+}
+@media (max-width: 991px) {
+	#group {
+		flex-direction: column;
+	}
+	#form-wrap {
+		padding: 5% 0;
+	}
+}
+</style>
 </head>
 <body data-spy="scroll" data-target=".navbar-collapse">
 	<!--[if lt IE 8]>
@@ -79,20 +170,78 @@
 
 
 	<!-- Contact Section -->
-	<section id="contact" class="contactus margin-top-120">
-		<div class="container">
+	<section id="contact" class="contactus">
+
+		<div id="page-wrap">
+
+			<div id="head_title">
+				<h1 style="line-height: 2.1;">로그인</h1>
+			</div>
+
+			<div id="group">
+
+				<div id="img-wrap">
+					<img src="/resources/assets/images/hh.jpg">
+				</div>
+
+				<div id="form-wrap">
+					
+					<form>
+
+						<div id="test">
+							<input type="checkbox" id="check_test">
+							<label for="check_test" id="check_info">테스트 로그인</label>
+						</div>
+
+						<div class="form-group">
+							<label>아이디</label> 
+							<input type="text" id="userid" name="userid" required="" placeholder="아이디를 입력해주세요.">
+						</div>
+
+						<div class="form-group">
+							<label>비밀번호</label> 
+							<input type="password"
+								id="passwd" name="passwd" required=""
+								placeholder="비밀번호를 입력해주세요.">
+						</div>
+
+						<div style="font-size:15px; font-weight: bold;" id="result"></div>
+									
+						
+						<div class="form-group">
+							<input type="button" value="로그인" class="btn" id="loginBtn">
+						</div>
+
+						
+						
+						<div id="info">
+							계정이 없으신가요?&nbsp;&nbsp;
+							<a style="text-align: left;" href="page_join">회원가입</a>
+						</div>
+					</form>
+				</div>
+				
+				
+			</div>
+
+		</div>
+
+
+
+		<!-- <div class="container">
 			<div class="row">
 				<div class="col-sm-12">
 					<div class="main_contact sections">
 						<div class="head_title text-center">
 							<h1 style="line-height: 2.1;">로그인</h1>
 						</div>
-						
-						<div class="col-sm-6" style="float: left;">
+
+						<div id="group">
+						<div class="col-sm-6" style="float: left; width: 620px;">
 							<img src="/resources/assets/images/hh.jpg">
 						</div>
 
-						<div class="col-sm-6 col-xs-12" style="width: 33%; float: left;">
+						<div class="col-sm-6 col-xs-12" style="float: left;">
 							<div class="single_contant_left margin-top-60">
 
 								<form>
@@ -121,12 +270,11 @@
 								</form>
 							</div>
 						</div>
-
+                        </div>
 					</div>
-					<!-- End of messsage contant-->
 				</div>
 			</div>
-		</div>
+		</div> -->
 		<!-- End of row -->
 		<!-- End of container -->
 

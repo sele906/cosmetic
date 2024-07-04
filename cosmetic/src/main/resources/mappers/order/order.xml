@@ -23,7 +23,7 @@
 		INSERT INTO orderitem(
 		p_id, amount, orderstatus, orderid, o_name
 		) VALUES (
-		#{p_id}, #{amount}, #{orderstatus}, #{orderid}, #{o_name}
+		#{pid}, #{amount}, #{orderstatus}, #{orderid}, #{oMame}
 		)
 	</insert>
 
@@ -77,7 +77,7 @@
 	<!-- 포인트 적립 -->
 	<update id="pointUpdate">
 		UPDATE member
-		SET point = point + #{point}
+		SET point = point + #{npoint}
 		WHERE userid = #{userid}
 	</update>
 
@@ -122,12 +122,15 @@
 
 	<!-- 주문 목록 출력 -->
 	<select id="orderList"
-		resultType="com.example.cosmetic.model.order.OrderDTO">
-		SELECT i.orderid, orderDate, i.orderItemId, p_id, amount, orderStatus,
-		totalPrice, o_name
-		from orderlist l, orderitem i
+		resultType="java.util.Map">
+		SELECT i.orderid, orderDate, i.orderItemId,
+		p.p_id, p_name, p_price,
+		(SELECT REPLACE(file_name, 'src/main/webapp', '') file_name FROM p_attach a WHERE i.p_id = a.p_id LIMIT 1) file_name,
+		amount, orderStatus, totalPrice, o_name
+		from orderlist l, orderitem i, product p
 		WHERE l.orderid = i.orderid
-		and userid = #{userid}
+		AND p.p_id = i.p_id
+		AND userid = #{userid}
 		<choose>
 			<when test="startDate != '' and endDate != ''">
 				AND orderDate &gt;= #{startDate}
@@ -271,15 +274,15 @@
 	<!-- 상품수량 확인 -->
 	<select id="pItemAmount" resultType="int">
 		SELECT o_amount FROM product_option
-		WHERE o_p_id = #{p_id} AND o_name = #{o_name}
+		WHERE o_p_id = #{p_id} AND o_name = #{oName}
 	</select>
 
 	<select id="pAmount" resultType="int">
-		SELECT p_stock FROM product WHERE p_id = #{p_id}
+		SELECT p_stock FROM product WHERE p_id = #{pid}
 	</select>
 	
 	<!-- 옵션 없을 때 상품 수량 확인 -->
-	<select id="p_no_option_amount" resultType="int">
+	<select id="pNoOptionAmount" resultType="int">
 		SELECT p_stock FROM product WHERE p_id = #{p_id}
 	</select>
 
@@ -288,28 +291,28 @@
 	<update id="pItemUpdateAmount">
 		UPDATE product_option
 		SET o_amount = #{PItemAmount}
-		WHERE o_p_id = #{p_id}
-		AND o_name = #{o_name}
+		WHERE o_p_id = #{pid}
+		AND o_name = #{oName}
 	</update>
 
 	<update id="pUpdateAmount">
 		UPDATE product
 		SET p_stock = #{PAmount}
-		WHERE p_id = #{p_id}
+		WHERE p_id = #{pid}
 	</update>
 	
 	<!-- 옵션 없을 때 -->
-	<update id="p_no_o_amount_update">
+	<update id="pNoOptionAmountUpdate">
 		UPDATE product
 		SET p_stock = #{PAmount}
 		WHERE p_id = #{p_id}
 	</update>
 	
 	<!-- 상품 판매시 판매수량 업데이트 -->
-	<update id="p_sell_update">
+	<update id="pSellUpdate">
 		UPDATE product 
 		SET p_sell = p_sell + 1 
-		WHERE p_id = #{p_id}
+		WHERE p_id = #{pid}
 	</update>
 	
 	

@@ -82,35 +82,30 @@ public class CartController {
 	public Map<String, String> o_name_update(HttpSession session, @RequestBody Map<String, String> requestData) {
 		String o_name = requestData.get("o_name");
 		int c_id = Integer.parseInt(requestData.get("c_id"));
-		System.out.println(o_name);
 		String userid = (String) session.getAttribute("userid");
 		CartDTO dto = new CartDTO();
 		dto.setUserid(userid);
 		dto.setC_id(c_id);
 		dto.setO_name(o_name);
 		int quantity = cartDao.amount(c_id);
-		// System.out.println("quantity:"+quantity);
+
 		// 기존 장바구니에 해당 옵션이 존재하는지 확인
 		List<CartDTO> existingCartItems = cartDao.exist_cart(dto);
 
-		// System.out.println("장바구니에 존재 하는="+existingCartItems);
 		boolean exists = false;
 
 		for (CartDTO cart : existingCartItems) {
 			if (cart.getO_name().equals(o_name)) {
 				int newAmount = cart.getAmount() + quantity; // 기존 수량에 추가할 수량을 더함
-				// System.out.println("기존 수량에 추가할 수량을 더함="+newAmount);
 				cart.setAmount(newAmount); // 수량을 업데이트
 				cartDao.delete(c_id);
 				cartDao.exist_amount_update(existingCartItems); // 업데이트된 장바구니 정보를 DB에 반영
 				exists = true;
-				// System.out.println("같은게 존재한다");
 				break;
 			}
 		}
 		if (!exists) {
 			cartDao.o_name_update(dto);
-			// System.out.println("새롭게 장바구니 추가"+dto);
 		}
 		Map<String, String> response = new HashMap<>();
 		response.put("status", "success");
@@ -140,18 +135,21 @@ public class CartController {
 	}
 
 	@PostMapping("insert")
+	@ResponseBody
 	public String insert(@RequestBody Map<String, Object> requestMap, HttpSession session) {
 		String userid = (String) session.getAttribute("userid");
+
 		if (userid == null) {
-			return "redirect:/member/page_login";
+			return "null";
 		}
 		int p_id = (int) requestMap.get("p_id");
 
 		List<Map<String, Object>> selectedOptions = (List<Map<String, Object>>) requestMap.get("options");
+		System.out.println(selectedOptions);
 
 		for (Map<String, Object> option : selectedOptions) {
+			System.out.println(option);
 			String optionName = (String) option.get("o_name");
-			System.out.println(optionName);
 
 			// 옵션이 null인 경우 처리
 			if (optionName == null || optionName.equals("")) {
@@ -166,30 +164,25 @@ public class CartController {
 			dto.setO_name(optionName);
 			dto.setAmount(quantity);
 			dto.setUserid(userid);
-			//dto.setMoney(money);
-			// System.out.println("장바구니 추가하려는 dto=" + dto);
 
 			List<CartDTO> existCartList = cartDao.exist_cart(dto);
-			// System.out.println("장바구니에 존재하는=" + existCartList);
 			boolean exists = false;
 
 			for (CartDTO cart : existCartList) {
 				if (cart.getO_name().equals(optionName) && cart.getP_id() == p_id) {
 					int newAmount = cart.getAmount() + quantity; // 기존 수량에 추가할 수량을 더함
-					// System.out.println("기존 수량에 추가할 수량을 더함=" + newAmount);
+
 					cart.setAmount(newAmount); // 수량을 업데이트
 					cartDao.exist_amount_update(existCartList); // 업데이트된 장바구니 정보를 DB에 반영
 					exists = true;
-					System.out.println("같은게 존재한다");
 					break;
 				}
 			}
 			if (!exists) {
 				cartDao.insert(dto); // 장바구니에 존재하지 않으면 새로 추가
-				// System.out.println("새롭게 장바구니 추가" + dto);
 			}
 		}
-		return "redirect:/cart/list";
+		return "success";
 	}
 
 }
