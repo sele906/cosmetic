@@ -801,23 +801,23 @@ if (urlParams != null) {
 			<c:choose>
 			
 				<c:when test="${row.orderStatus == '결제완료'}">
-					<button type="button" onclick="redoOrder(${row.orderid}, ${row.idx}, ${row.p_price}, ${row.amount})">결제 취소</button>
+					<button type="button" onclick="redoOrder(${row.orderid}, ${row.orderItemId}, ${row.p_price}, ${row.amount})">결제 취소</button>
 				</c:when>
 				
 				<c:when test="${row.orderStatus == '배송완료'}">
-					<button type="button" onclick="updateStatus(${row.orderid}, ${row.idx})" class="btn_s">반품 요청</button>
+					<button type="button" onclick="updateStatus(${row.orderid}, ${row.orderItemId})" class="btn_s">반품 요청</button>
 					<button type="button" id="btnOpenModal" class="btn_s" onclick="write_review(${row.p_id})">리뷰 등록</button>
 				</c:when>
 			
 				<c:when test="${row.orderStatus == '반품요청'}">
-					<button type="button" onclick="redoStatus(${row.idx})">반품 취소</button>
+					<button type="button" onclick="redoStatus(${row.orderItemId})">반품 취소</button>
 				</c:when>
 				
 				<c:when test="${row.orderStatus == '반품완료'}">
 				</c:when>
 				
 				<%-- <c:otherwise>
-					<button type="button" onclick="updateStatus(${row.orderid}, ${row.idx})">반품 요청</button>
+					<button type="button" onclick="updateStatus(${row.orderid}, ${row.orderItemId})">반품 요청</button>
 				</c:otherwise> --%>
 				
 			</c:choose>

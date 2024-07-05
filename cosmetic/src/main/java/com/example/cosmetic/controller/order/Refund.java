@@ -17,11 +17,12 @@ import com.google.gson.JsonParser;
 
 public class Refund {
 	
+    //토큰으로 환불요청
     public static void refundRequest(String access_token, long merchant_uid, String reason, int price) throws IOException {
         URL url = new URL("https://api.iamport.kr/payments/cancel");
         HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
         
-        // 요청 방식을 POST로 설정
+        // 요청 방식을 GET으로 설정
         conn.setRequestMethod("GET");
  
         // 요청의 Content-Type, Accept, Authorization 헤더 설정
@@ -46,13 +47,14 @@ public class Refund {
  
         // 입력 스트림으로 conn 요청에 대한 응답 반환
         BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        System.out.println(br);
         br.close();
         
         //연결 끊기
         conn.disconnect();
     }
 	
-	
+	//api 토큰 가져오기
     public static String getToken(String apiKey, String secretKey) throws IOException {
         URL url = new URL("https://api.iamport.kr/users/getToken");
         HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
@@ -80,7 +82,7 @@ public class Refund {
  
         // 입력 스트림으로 conn 요청에 대한 응답 반환
         BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-        
+        System.out.println(br);
         Gson gson = new Gson(); // 응답 데이터를 자바 객체로 변환
         String response = gson.fromJson(br.readLine(), Map.class).get("response").toString();
         String accessToken = gson.fromJson(response, Map.class).get("access_token").toString();

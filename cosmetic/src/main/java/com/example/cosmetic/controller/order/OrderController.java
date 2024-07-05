@@ -473,7 +473,6 @@ public class OrderController {
 		
 		//목록 출력
 		list = orderDAO.orderList(listInfo);
-		System.out.println(list);
 		
 		//주문 상태 세기
 		Map<String, Object> Scount = new HashMap<>();
@@ -523,11 +522,10 @@ public class OrderController {
 		//주문상태 업데이트
 		Map<String, Object> status = new HashMap<>();
 		status.put("itemid", itemid);
-		status.put("status", 3);
+		status.put("status", 3); //반품요청 > 결제완료로 변경
 		orderDAO.updateStatus(status);
-		
-		String result = "success";
-		return result;
+
+        return "success";
 	}
 	
 	//반품요청
@@ -540,17 +538,16 @@ public class OrderController {
 		int itemid = Integer.parseInt(refundinfo.get("itemid").toString());
 		String reason = refundinfo.get("reason").toString();
 		
-		//주문상태 업데이트
-		Map<String, Object> status = new HashMap<>();
-		status.put("itemid", itemid);
-		status.put("status", 4);
-		orderDAO.updateStatus(status);
-		
 		Map<String, Object> map = new HashMap<>();
 		map.put("orderid", orderid);
 		map.put("reason", reason);
-		
-		orderDAO.cancelReason(map);
+		orderDAO.cancelReason(map); //반품 사유 주문 테이블에 넣기
+
+        //주문상태 업데이트
+        Map<String, Object> status = new HashMap<>();
+        status.put("itemid", itemid);
+        status.put("status", 4); //결제 완료 > 반풍요청
+        orderDAO.updateStatus(status);
 		
 		String result = "success";
 		return result;
@@ -568,13 +565,13 @@ public class OrderController {
 		int delprice = Integer.parseInt(payinfo.get("delPrice").toString());
         String reason = payinfo.get("reason").toString();
         
-        Map<String, Object> costs = orderDAO.chooseCosts(orderid);
-        
+        Map<String, Object> costs = orderDAO.chooseCosts(orderid); //주문 테이블에서 총 합계와 배송비 가져오기
+		int price = (int) costs.get("price");
         int totalPrice = (int) costs.get("totalPrice");
         int deliverCost = (int) costs.get("deliverCost");
         
-        //총 금액에서 환불할 금액 제외
-        int updatePrice = totalPrice - deliverCost - delprice;
+        //환불할 금액 제외
+        int updatePrice = price - delprice;
         if (updatePrice < 0) {
 			updatePrice = 0;
 		}
@@ -593,10 +590,10 @@ public class OrderController {
 		Map<String, Object> status = new HashMap<>();
 		status.put("itemid", itemid);
 		
-		if (payinfo.get("confirm") != null) {
+		if (payinfo.get("confirm") != null) { // 결제취소시
         	status.put("status", 6);
         	orderDAO.updateStatus(status);
-        } else {
+        } else { // 반품요청 > 관리자 > 반품완료
         	status.put("status", 5);
         	orderDAO.updateStatus(status);
         }

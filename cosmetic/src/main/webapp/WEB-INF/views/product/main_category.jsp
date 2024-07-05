@@ -196,6 +196,16 @@
         </div>
     </c:if>
 
+    <c:if test="${name ne '아이' and name ne '립'}">
+        <div class="row">
+            <div class="main_mix_content text-center">
+                <div class="head_title">
+                    <img style="width: 800px; height: 300px; padding-right: 80px; object-fit: cover" src="/resources/assets/images/main_img.jpg">
+                </div>
+            </div>
+        </div>
+    </c:if>
+
     <br>
 
     <c:if test="${name eq '아이' }">
