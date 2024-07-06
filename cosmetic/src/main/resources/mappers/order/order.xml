@@ -77,7 +77,7 @@
 	<!-- 포인트 적립 -->
 	<update id="pointUpdate">
 		UPDATE member
-		SET point = point + #{npoint}
+		SET point = #{cpoint}
 		WHERE userid = #{userid}
 	</update>
 

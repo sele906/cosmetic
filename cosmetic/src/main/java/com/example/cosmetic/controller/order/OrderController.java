@@ -235,7 +235,9 @@ public class OrderController {
 			@RequestParam(name = "zipcode") String zipcode,
 			@RequestParam(name = "address1") String address1, 
 			@RequestParam(name = "address2") String address2,
-			@RequestParam(name = "tel") String tel, 
+			@RequestParam(name = "tel") String tel,
+
+			@RequestParam(name = "currentPoint") int currentPoint,
 			@RequestParam(name = "addPoint") int addPoint,
 			@RequestParam(name = "usedPoint") int usedPoint,
 
@@ -277,11 +279,13 @@ public class OrderController {
 
 		// 포인트 계산
 		Map<String, Object> pointinfo = new HashMap<>();
-		int newPoint = addPoint - usedPoint;
-		if (newPoint < 0) {
-			newPoint = 0;
+		currentPoint = currentPoint - usedPoint + addPoint;
+		System.out.println(currentPoint);
+		if (currentPoint < 0) {
+			currentPoint = 0;
 		}
-		pointinfo.put("npoint", newPoint);
+
+		pointinfo.put("cpoint", currentPoint);
 		pointinfo.put("userid", userid);
 		orderDAO.pointUpdate(pointinfo); //주문테이블에 포인트 업데이트
 
@@ -290,9 +294,6 @@ public class OrderController {
 		if (totalPrice < 0) {
 			totalPrice = 0;
 		}
-		
-		// 적립된 포인트 불러오기
-		int userPoint = orderDAO.showPoint(userid);
 		
 		// 주문 테이블과 주문 아이템 테이블 출력하기
 		List<Map<String, Object>> orderitems = new ArrayList<>();
@@ -425,7 +426,7 @@ public class OrderController {
 		// 데이터 전달
 		model.addAttribute("order", order); // 주문 정보
 		model.addAttribute("orderitems", orderitems); // 주문 아이템 정보
-		model.addAttribute("userPoint", userPoint); // 보유한 포인트
+		model.addAttribute("userPoint", currentPoint); // 보유한 포인트
 		model.addAttribute("usedPoint", usedPoint); // 사용한 포인트
 		
 		return "/product/order/order_result";

@@ -93,48 +93,16 @@ public class OrderDAO {
 		sqlSession.delete("order.cartDelete", c_id);
 	}
 	
-	//상품리스트에서 주문 아이템 삭제
-	public void orderItemDelete(int orderItemId) {
-		sqlSession.delete("order.orderItemDelete", orderItemId);
-	}
-	
-	//주문 리스트에서 주문 아이템 id 선택
-	public String orderItemIdSelect(long orderid) {
-		return sqlSession.selectOne("order.orderItemIdSelect", orderid);
-	}
-	
-	//주문 리스트 업데이트
-	public void orderlistUpdate(Map<String, Object> map) {
-		sqlSession.update("order.orderlistUpdate", map);
-	}
-	
-	//주문 리스트에서 특정 주문 삭제
-	public void orderDelete(long orderid) {
-		sqlSession.delete("order.orderDelete", orderid);
-	}
-	
-	//환불시 금액 차감
-	public void deletePrice(long orderid) {
-		sqlSession.delete("order.deletePrice", orderid);
-	}
 	public void updatePrice(Map<String, Object> map) {
 		sqlSession.update("order.updatePrice", map);
 	}
 	
-	//환불 전 주문 아이템 존재여부
-	public int countItem(long orderid) {
-		return sqlSession.selectOne("order.countItem", orderid);
-	}
-	//환불 상태 수정
 	public void updateStatus(Map<String, Object> map) {
 		sqlSession.update("order.updateStatus", map);
 	}
 	public void cancelReason(Map<String, Object> map) {
 		sqlSession.update("order.cancelReason", map);
 	}
-//	public void updateRefundStatus(int itemid) {
-//		sqlSession.update("order.updateRefundStatus", itemid);
-//	}
 	
 	//주문목록에서 환불에 필요한 정보 불러오기
 	public Map<String, Object> chooseCosts(long orderid) {
@@ -169,9 +137,6 @@ public class OrderDAO {
 	public void pSellUpdate(int pid) {
 		sqlSession.update("order.pSellUpdate", pid);
 	}
-	
-	
-		
-	
+
 	
 }
