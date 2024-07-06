@@ -217,6 +217,14 @@ public class OrderController {
 		return "/product/order/order_form";
 	}
 
+	// 주문자 정보 불러오기
+	@ResponseBody
+	@GetMapping("memberInfo.do")
+	public Map<String, Object> memberInfo(@RequestParam(name = "userid") String userid, HttpSession session) {
+		Map<String, Object> map = orderDAO.memberInfo(userid);
+		return map;
+	}
+
 	// 주문서 작성완료시 > 주문완료 페이지
 	@PostMapping("order.do")
 	public String order(
@@ -280,7 +288,7 @@ public class OrderController {
 		// 포인트 계산
 		Map<String, Object> pointinfo = new HashMap<>();
 		currentPoint = currentPoint - usedPoint + addPoint;
-		System.out.println(currentPoint);
+
 		if (currentPoint < 0) {
 			currentPoint = 0;
 		}
@@ -327,7 +335,7 @@ public class OrderController {
 				amountInfo.put("oName", oname);
 				amountInfo.put("orderItemId", itemId);
 
-				//수량 가져오기
+				//현재 수량 가져오기
 				PAmount = orderDAO.pAmount(amountInfo);
 				PItemAmount = orderDAO.pItemAmount(amountInfo);
 
@@ -358,9 +366,10 @@ public class OrderController {
 				amountInfo.put("p_id", pid);
 				amountInfo.put("p_stock", amount);
 
-				//수량 가져오기
+				//현재 수량 가져오기
 				PAmount = orderDAO.pNoOptionAmount(pid);
-				
+
+				//수량 감소
 				PAmount -= amount;
 				
 				if (PAmount <= 0) {
@@ -373,7 +382,7 @@ public class OrderController {
 				orderDAO.pNoOptionAmountUpdate(amountInfo);
 			}
 			
-			//판매수량 업데이트
+			//판매량 업데이트
 			orderDAO.pSellUpdate(pid);
 
 			//결과 페이지에서 출력할 데이터
@@ -487,7 +496,7 @@ public class OrderController {
 		int [] statusArray = new int[5];
 		
 		for (int i=0; i<5; i++) {
-			Scount.put("status", i+1);
+			Scount.put("status", i+1); //HashMap의 경우 기존 키 중복 삽입시 새로운 값으로 대체됨
 			int num = orderDAO.countStatus(Scount);
 			statusArray[i] = num;
 		}
@@ -505,14 +514,6 @@ public class OrderController {
 		model.addAttribute("statusArray", statusArray);
 
 		return "/product/order/ordered_list";
-	}
-
-	// 주문자 정보 불러오기
-	@ResponseBody
-	@GetMapping("memberInfo.do")
-	public Map<String, Object> memberInfo(@RequestParam(name = "userid") String userid, HttpSession session) {
-		Map<String, Object> map = orderDAO.memberInfo(userid);
-		return map;
 	}
 	
 	//반품요청취소
@@ -569,10 +570,9 @@ public class OrderController {
 		int delprice = Integer.parseInt(payinfo.get("delPrice").toString());
         String reason = payinfo.get("reason").toString();
         
-        Map<String, Object> costs = orderDAO.chooseCosts(orderid); //주문 테이블에서 총 합계와 배송비 가져오기
+        Map<String, Object> costs = orderDAO.chooseCosts(orderid); //주문 테이블에서 총 합계 가져오기
 		int price = (int) costs.get("price");
         int totalPrice = (int) costs.get("totalPrice");
-        int deliverCost = (int) costs.get("deliverCost");
         
         //환불할 금액 제외
         int updatePrice = price - delprice;
@@ -612,7 +612,4 @@ public class OrderController {
 		String result = "success";
 		return result;
 	}
-	
-	
-	
 }
