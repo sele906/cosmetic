@@ -27,6 +27,7 @@ import javax.net.ssl.HttpsURLConnection;
 import org.apache.ibatis.javassist.tools.framedump;
 import org.eclipse.tags.shaded.org.apache.xalan.xsltc.compiler.sym;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -54,8 +55,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 public class OrderController {
 
 	//포트원 api 키
-	private static final String KEY = "6746882717766507";
-	private static final String SECRET = "wwGfcjpUcw74nxulMRj9ZKMeT3h8tZtiytjDoc9XDjlhrXUyrB9vvY7vDalSFvrT5ciMw5REpV0IZlGK";
+	@Value("${payment-admin-key}")
+	private String KEY;
+	@Value("${payment-admin-secret}")
+	private String SECRET;
 	
 	@Autowired
 	OrderDAO orderDAO;

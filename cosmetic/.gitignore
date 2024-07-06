@@ -35,3 +35,7 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### 숨기기 ###
+application.properties
+application-API-KEY.properties
