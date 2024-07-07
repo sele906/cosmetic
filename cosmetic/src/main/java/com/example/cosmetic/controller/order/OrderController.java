@@ -89,7 +89,7 @@ public class OrderController {
 			return "redirect:/member/page_login";
 		}
 
-		// 상품정보 개별적으로 주문 아이템 테이블에 넣기
+		// 상품정보 개별적으로 주문 아이템 리스트에 넣기
 		List<Map<String, Object>> list = new ArrayList<>();
 
 		for (int i = 0; i < amounts.length; i++) {
@@ -150,7 +150,7 @@ public class OrderController {
 
 		//상품 옵션 처리
 		if (options.length == 0) { //바로구매 > 주문페이지
-			options = new String[]{""}; //빈 옵션 배열 생성
+			options = new String[]{""}; //빈 옵션 배열 생성하여 초기화
 		} else {
 			for (int i = 0; i < options.length; i++) { //장바구니 개별구매 > 주문페이지
 				if (options[i].equals("없음")) { // 옵션이 있는지 확인
@@ -220,7 +220,7 @@ public class OrderController {
 	// 주문자 정보 불러오기
 	@ResponseBody
 	@GetMapping("memberInfo.do")
-	public Map<String, Object> memberInfo(@RequestParam(name = "userid") String userid, HttpSession session) {
+	public Map<String, Object> memberInfo(@RequestParam(name = "userid") String userid) {
 		Map<String, Object> map = orderDAO.memberInfo(userid);
 		return map;
 	}
