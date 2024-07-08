@@ -742,7 +742,7 @@ if (urlParams != null) {
 			</p>
 			<p class="d">
 			    <fmt:parseDate value="${ row.orderDate }" pattern="yyyy-MM-dd'T'HH:mm" var="parsedDateTime" type="both" />
-                <fmt:formatDate pattern="dd.MM.yyyy HH:mm" value="${ parsedDateTime }" />
+                <fmt:formatDate pattern="yyyy.MM.dd HH:mm" value="${ parsedDateTime }" />
 			</p>
 		</td>
 		<td>

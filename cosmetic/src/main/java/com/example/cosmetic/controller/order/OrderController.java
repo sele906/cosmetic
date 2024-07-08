@@ -89,6 +89,10 @@ public class OrderController {
 			return "redirect:/member/page_login";
 		}
 
+		// 포인트
+		int currentPoint = orderDAO.showPoint(userid); // 보유한 포인트
+		int addPoint = (int) Math.round(price * 0.01); // 포인트 비율 설정
+
 		// 상품정보 개별적으로 주문 아이템 리스트에 넣기
 		List<Map<String, Object>> list = new ArrayList<>();
 
@@ -117,10 +121,6 @@ public class OrderController {
 			map.put("pName", pName);
 			list.add(map); //개별 상품 정보를 리스트에 넣기
 		}
-
-		// 포인트
-		int currentPoint = orderDAO.showPoint(userid); // 보유한 포인트
-		int addPoint = (int) Math.round(price * 0.01); // 포인트 비율 설정
 
 		// 다음페이지로 전달
 		model.addAttribute("list", list);
@@ -167,6 +167,10 @@ public class OrderController {
 			return "redirect:/member/page_login";
 		}
 
+		//포인트
+		int currentPoint = orderDAO.showPoint(userid); //보유한 포인트
+		int addPoint = (int) Math.round(price * 0.01); //포인트 비율 설정
+
 		// 상품정보 개별적으로 주문 아이템 테이블에 넣기
 		List<Map<String, Object>> list = new ArrayList<>();
 		
@@ -197,10 +201,6 @@ public class OrderController {
 			  
 			list.add(map);
 		}
-		  
-		//포인트
-		int currentPoint = orderDAO.showPoint(userid); //보유한 포인트
-		int addPoint = (int) Math.round(price * 0.01); //포인트 비율 설정
 
 		//다음페이지로 전달
 		//주문 정보 표현
@@ -492,9 +492,9 @@ public class OrderController {
 		Scount.put("userid", userid);
 		Scount.put("startDate", fDate);
 		Scount.put("endDate", lDate);
-		
+
 		int [] statusArray = new int[5];
-		
+
 		for (int i=0; i<5; i++) {
 			Scount.put("status", i+1); //HashMap의 경우 기존 키 중복 삽입시 새로운 값으로 대체됨
 			int num = orderDAO.countStatus(Scount);
@@ -607,9 +607,12 @@ public class OrderController {
 		
 		//포트원 환불
 		String token = Refund.getToken(KEY, SECRET); 
-		Refund.refundRequest(token, orderid, reason, delprice);
-		
-		String result = "success";
-		return result;
+		String refResult = Refund.refundRequest(token, orderid, reason, delprice);
+
+		if (refResult.equals("cancelled")) {
+			return "success";
+		} else {
+			return "error";
+		}
 	}
 }
