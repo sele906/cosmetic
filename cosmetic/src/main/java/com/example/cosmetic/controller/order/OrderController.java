@@ -171,7 +171,7 @@ public class OrderController {
 		int currentPoint = orderDAO.showPoint(userid); //보유한 포인트
 		int addPoint = (int) Math.round(price * 0.01); //포인트 비율 설정
 
-		// 상품정보 개별적으로 주문 아이템 테이블에 넣기
+		// 상품정보 개별적으로 주문 아이템 리스트에 넣기
 		List<Map<String, Object>> list = new ArrayList<>();
 		
 		for (int i=0; i<amounts.length; i++) {
@@ -527,7 +527,7 @@ public class OrderController {
 		//주문상태 업데이트
 		Map<String, Object> status = new HashMap<>();
 		status.put("itemid", itemid);
-		status.put("status", 3); //반품요청 > 결제완료로 변경
+		status.put("status", 3); //반품요청 > 배송완료로 변경
 		orderDAO.updateStatus(status);
 
         return "success";
@@ -551,7 +551,7 @@ public class OrderController {
         //주문상태 업데이트
         Map<String, Object> status = new HashMap<>();
         status.put("itemid", itemid);
-        status.put("status", 4); //결제 완료 > 반풍요청
+        status.put("status", 4); //배송완료 > 반풍요청
         orderDAO.updateStatus(status);
 		
 		String result = "success";
